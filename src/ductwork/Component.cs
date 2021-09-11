@@ -9,9 +9,9 @@ namespace ductwork
     public class ExecutionContext<T>
     {
         public readonly Graph Graph;
-        public readonly Component<T> Component;
+        public readonly IComponent Component;
 
-        public ExecutionContext(Graph graph, Component<T> component)
+        public ExecutionContext(Graph graph, IComponent component)
         {
             Graph = graph;
             Component = component;

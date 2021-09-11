@@ -24,11 +24,37 @@ namespace ductwork
             }
         }
 
+        public void Connect(IComponent component, object key, IPlug plug)
+        {
+            Connect_Internal(component, key, plug);
+        }
+
+        public void Connect(IComponent component, IPlug plug)
+        {
+            Connect_Internal(component, DefaultKey, plug);
+        }
+        
         public void Connect<T>(Component<T> component, object key, Plug<T> plug)
+        {
+            Connect_Internal(component, key, plug);
+        }
+
+        public void Connect<T>(Component<T> component, Plug<T> plug)
+        {
+            Connect_Internal(component, DefaultKey, plug);
+        }
+
+        private void Connect_Internal(IComponent component, object key, IPlug plug)
         {
             if (!_components.Contains(component))
             {
-                throw new ArgumentException("Component has not been added to the graph.", nameof(component));
+                throw new InvalidOperationException("Component has not been added to the graph.");
+            }
+
+            if (component.Type != plug.Type)
+            {
+                throw new InvalidOperationException(
+                    $"Component output type of {component.Type} does not match Plug input type of {plug.Type}");
             }
 
             lock (_lock)
@@ -51,11 +77,6 @@ namespace ductwork
                 _componentPlugs[component][key].Add(plug);
                 _plugComponents[plug].Add(component);
             }
-        }
-
-        public void Connect<T>(Component<T> component, Plug<T> plug)
-        {
-            Connect(component, DefaultKey, plug);
         }
 
         public async Task Execute(CancellationToken token)
