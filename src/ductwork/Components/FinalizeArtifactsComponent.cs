@@ -27,16 +27,15 @@ namespace ductwork.Components
         }
     }
 
-    public class FinalizeArtifactsComponent : SingleInExecutorComponent<FinalizedResult, Artifact>
+    public class FinalizeArtifactsComponent : SingleInComponent<Artifact>
     {
+        public readonly OutputPlug<FinalizedResult> Out = new();
+        
         public delegate void OnArtifactFinalized(FinalizeArtifactsComponent sender, FinalizedResult result);
 
         public event OnArtifactFinalized? ArtifactFinalized;
 
-        public override async Task ExecuteIn(
-            ExecutionContext<FinalizedResult> context,
-            Artifact value,
-            CancellationToken token)
+        public override async Task ExecuteIn(Graph graph, Artifact value, CancellationToken token)
         {
             var state = FinalizedResult.FinalizedState.SucceededSkipped;
             Exception? exception = null;
@@ -57,7 +56,7 @@ namespace ductwork.Components
             }
 
             var result = new FinalizedResult(value, state, exception);
-            await context.PushResult(result);
+            await graph.Push(Out, result);
 
             ArtifactFinalized?.Invoke(this, result);
         }

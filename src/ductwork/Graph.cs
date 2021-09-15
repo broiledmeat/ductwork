@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,76 +11,88 @@ namespace ductwork
     public class Graph
     {
         public static readonly object DefaultKey = new();
-        private readonly object _lock = new();
-        private readonly HashSet<IComponent> _components = new();
-        private readonly HashSet<IComponent> _componentsCompleted = new();
-        private readonly Dictionary<IComponent, Dictionary<object, HashSet<IPlug>>> _componentPlugs = new();
-        private readonly Dictionary<IPlug, HashSet<IComponent>> _plugComponents = new();
 
-        public void Add(params IComponent[] components)
+        private readonly object _lock = new();
+
+        private readonly HashSet<Component> _components = new();
+
+        private readonly Dictionary<Component, HashSet<IOutputPlug>> _componentOutputs = new();
+        private readonly Dictionary<Component, HashSet<IInputPlug>> _componentInputs = new();
+
+        private readonly Dictionary<IOutputPlug, Dictionary<object, HashSet<IInputPlug>>> _connections = new();
+        private readonly Dictionary<IInputPlug, AsyncQueue<object?>> _inputQueues = new();
+
+        private readonly HashSet<IOutputPlug> _outputsCompleted = new();
+        private readonly HashSet<IInputPlug> _inputsCompleted = new();
+
+        public void Add(params Component[] components)
         {
+            static IEnumerable<T> GetFieldsOfType<T>(Component obj)
+            {
+                var type = obj.GetType();
+                return type
+                    .GetFields()
+                    .Where(info => info.FieldType.IsAssignableTo(typeof(T)))
+                    .Select(info => type.GetField(info.Name)?.GetValue(obj))
+                    .NotNull()
+                    .Cast<T>()
+                    .ToHashSet();
+            }
+
             foreach (var component in components)
             {
                 _components.Add(component);
+
+                var outputs = GetFieldsOfType<IOutputPlug>(component).ToHashSet();
+                var inputs = GetFieldsOfType<IInputPlug>(component).ToHashSet();
+
+                _componentOutputs.Add(component, outputs);
+                _componentInputs.Add(component, inputs);
+
+                foreach (var input in inputs)
+                {
+                    _inputQueues.Add(input, new AsyncQueue<object?>());
+                }
             }
         }
 
-        public void Connect(IComponent component, object key, IPlug plug)
+        public void Connect<T>(OutputPlug<T> output, InputPlug<T> inputPlug)
         {
-            Connect_Internal(component, key, plug);
+            Connect(output, DefaultKey, inputPlug);
         }
 
-        public void Connect(IComponent component, IPlug plug)
+        public void Connect<T>(OutputPlug<T> output, object key, InputPlug<T> input)
         {
-            Connect_Internal(component, DefaultKey, plug);
-        }
-        
-        public void Connect<T>(Component<T> component, object key, Plug<T> plug)
-        {
-            Connect_Internal(component, key, plug);
-        }
-
-        public void Connect<T>(Component<T> component, Plug<T> plug)
-        {
-            Connect_Internal(component, DefaultKey, plug);
-        }
-
-        private void Connect_Internal(IComponent component, object key, IPlug plug)
-        {
-            if (!_components.Contains(component))
+            if (!_componentOutputs.Values.Any(outputs => outputs.Contains(output)))
             {
-                throw new InvalidOperationException("Component has not been added to the graph.");
+                throw new InvalidOperationException("Output plugs' component has not been added to the graph.");
             }
-
-            if (component.Type != plug.Type)
+            
+            if (!_componentInputs.Values.Any(inputs => inputs.Contains(input)))
+            {
+                throw new InvalidOperationException("Input plugs' component has not been added to the graph.");
+            }
+            
+            if (output.Type != input.Type)
             {
                 throw new InvalidOperationException(
-                    $"Component output type of {component.Type} does not match Plug input type of {plug.Type}");
+                    $"Output type of {output.Type} does not match Input type of {input.Type}");
             }
 
-            lock (_lock)
+            if (!_connections.ContainsKey(output))
             {
-                if (!_componentPlugs.ContainsKey(component))
-                {
-                    _componentPlugs.Add(component, new Dictionary<object, HashSet<IPlug>>());
-                }
-
-                if (!_componentPlugs[component].ContainsKey(key))
-                {
-                    _componentPlugs[component].Add(key, new HashSet<IPlug>());
-                }
-
-                if (!_plugComponents.ContainsKey(plug))
-                {
-                    _plugComponents.Add(plug, new HashSet<IComponent>());
-                }
-
-                _componentPlugs[component][key].Add(plug);
-                _plugComponents[plug].Add(component);
+                _connections.Add(output, new Dictionary<object, HashSet<IInputPlug>>());
             }
+
+            if (!_connections[output].ContainsKey(key))
+            {
+                _connections[output].Add(key, new HashSet<IInputPlug>());
+            }
+
+            _connections[output][key].Add(input);
         }
 
-        public async Task Execute(CancellationToken token)
+        public async Task Execute(CancellationToken token = default)
         {
             var componentTasks = _components
                 .Select(component => Task.Run(() => ExecuteComponent(component, token).Wait(token), token))
@@ -87,77 +100,95 @@ namespace ductwork
             await Task.WhenAll(componentTasks);
         }
 
-        private async Task ExecuteComponent(IComponent component, CancellationToken token)
+        private async Task ExecuteComponent(Component component, CancellationToken token)
         {
-            await component.ExecuteWithGraph(this, token);
-            SetFinished(component);
+            await component.Execute(this, token);
 
-            var allPlugs = GetAllPlugs(component);
-            foreach (var plug in allPlugs)
+            lock (_lock)
             {
-                if (IsFinished(plug))
+                var outputs = GetOutputPlugs(component).ToArray();
+
+                foreach (var output in outputs)
                 {
-                    plug.SetFinished();
+                    _outputsCompleted.Add(output);
+                }
+
+                var allConnectedInputs = outputs
+                    .Select(output => _connections.GetValueOrDefault(output))
+                    .NotNull()
+                    .SelectMany(keyPair => keyPair.Values)
+                    .SelectMany(inputs => inputs)
+                    .ToHashSet();
+
+                foreach (var input in allConnectedInputs)
+                {
+                    var connectionsComplete = _connections
+                        .Where(outputPair => outputPair.Value.SelectMany(keyPair => keyPair.Value).Contains(input))
+                        .Select(outputPair => outputPair.Key)
+                        .All(connectedOutput => _outputsCompleted.Contains(connectedOutput));
+
+                    if (connectionsComplete)
+                    {
+                        _inputsCompleted.Add(input);
+                    }
                 }
             }
         }
 
-        public IComponent[] GetAllComponents(IPlug plug)
+        private IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
         {
-            if (_plugComponents.ContainsKey(plug))
-            {
-                return _plugComponents[plug].ToArray();
-            }
-
-            return Array.Empty<IComponent>();
+            return _componentOutputs.GetValueOrDefault(component, new HashSet<IOutputPlug>());
         }
 
-        public IPlug[] GetAllPlugs(IComponent component)
+        private IEnumerable<IInputPlug> GetInputPlugs(Component component)
         {
-            if (_componentPlugs.ContainsKey(component))
-            {
-                return _componentPlugs[component]
-                    .SelectMany(pair => pair.Value)
-                    .ToArray();
-            }
-
-            return Array.Empty<IPlug>();
+            return _componentInputs.GetValueOrDefault(component, new HashSet<IInputPlug>());
         }
 
-        public Plug<T>[] GetPlugs<T>(IComponent component, object key)
+        public async Task Push<T>(OutputPlug<T> output, T value)
         {
-            if (_componentPlugs.ContainsKey(component) &&
-                _componentPlugs[component].ContainsKey(key))
-            {
-                return _componentPlugs[component][key].OfType<Plug<T>>().ToArray();
-            }
-
-            return Array.Empty<Plug<T>>();
+            await Push(output, DefaultKey, value);
         }
 
-        public bool IsFinished(IPlug plug)
+        public async Task Push<T>(OutputPlug<T> output, object key, T value)
         {
-            lock (_lock)
+            if (!_connections.ContainsKey(output) || !_connections[output].ContainsKey(key))
             {
-                var components = GetAllComponents(plug);
-                return !components.Any() || components.All(IsFinished);
+                return;
+            }
+
+            var tasks = _connections[output][key]
+                .Select(input => _inputQueues.GetValueOrDefault(input))
+                .NotNull()
+                .Select(queue => queue.Enqueue(value));
+            await Task.WhenAll(tasks);
+        }
+
+        public async Task<T> Get<T>(InputPlug<T> input, CancellationToken token = default)
+        {
+            if (!_inputQueues.ContainsKey(input))
+            {
+                throw new InvalidOperationException();
+            }
+
+            var queue = _inputQueues[input];
+
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                if (queue.Count == 0)
+                {
+                    await Task.Delay(50, token);
+                    continue;
+                }
+
+                return (T)await queue.Dequeue(token);
             }
         }
 
-        private bool IsFinished(IComponent component)
-        {
-            lock (_lock)
-            {
-                return _componentsCompleted.Contains(component);
-            }
-        }
-
-        private void SetFinished(IComponent component)
-        {
-            lock (_lock)
-            {
-                _componentsCompleted.Add(component);
-            }
-        }
+        public int Count<T>(InputPlug<T> input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
+        
+        public bool IsFinished<T>(InputPlug<T> input) => Count(input) == 0 && _inputsCompleted.Contains(input);
     }
 }

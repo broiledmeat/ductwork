@@ -1,5 +1,4 @@
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Threading;
 using System.Threading.Tasks;
 
