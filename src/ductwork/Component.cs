@@ -52,4 +52,14 @@ namespace ductwork
             return Task.CompletedTask;
         }
     }
+
+    public abstract class SingleInSingleOutComponent<TI, TO> : SingleInComponent<TI>
+    {
+        public readonly OutputPlug<TO> Out = new();
+    }
+
+    public abstract class SingleOutComponent<TO> : Component
+    {
+        public readonly OutputPlug<TO> Out = new();
+    }
 }
