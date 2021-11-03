@@ -17,6 +17,8 @@ namespace ductwork
         private readonly Dictionary<Component, HashSet<IOutputPlug>> _componentOutputs = new();
         private readonly Dictionary<Component, HashSet<IInputPlug>> _componentInputs = new();
 
+        private readonly Dictionary<object, FieldInfo> _plugFieldInfos = new();
+
         private readonly Dictionary<IOutputPlug, HashSet<IInputPlug>> _connections = new();
         private readonly Dictionary<IInputPlug, AsyncQueue<object?>> _inputQueues = new();
 
@@ -25,29 +27,38 @@ namespace ductwork
 
         public void Add(params Component[] components)
         {
-            static IEnumerable<T> GetFieldsOfType<T>(Component obj)
+            static Dictionary<FieldInfo, T> GetFieldsOfType<T>(Component obj)
             {
                 var type = obj.GetType();
                 return type
                     .GetFields()
                     .Where(info => info.FieldType.IsAssignableTo(typeof(T)))
-                    .Select(info => type.GetField(info.Name)?.GetValue(obj))
-                    .NotNull()
-                    .Cast<T>()
-                    .ToHashSet();
+                    .ToDictionary(
+                        assignableField => assignableField,
+                        assignableField => (T) type.GetField(assignableField.Name)!.GetValue(obj)!);
             }
 
             foreach (var component in components)
             {
                 _components.Add(component);
 
-                var outputs = GetFieldsOfType<IOutputPlug>(component).ToHashSet();
-                var inputs = GetFieldsOfType<IInputPlug>(component).ToHashSet();
+                var outputs = GetFieldsOfType<IOutputPlug>(component);
+                var inputs = GetFieldsOfType<IInputPlug>(component);
 
-                _componentOutputs.Add(component, outputs);
-                _componentInputs.Add(component, inputs);
+                foreach (var (field, plug) in outputs)
+                {
+                    _plugFieldInfos.Add(plug, field);
+                }
 
-                foreach (var input in inputs)
+                foreach (var (field, plug) in inputs)
+                {
+                    _plugFieldInfos.Add(plug, field);
+                }
+
+                _componentOutputs.Add(component, outputs.Values.ToHashSet());
+                _componentInputs.Add(component, inputs.Values.ToHashSet());
+
+                foreach (var input in inputs.Values)
                 {
                     _inputQueues.Add(input, new AsyncQueue<object?>());
                 }
@@ -122,14 +133,39 @@ namespace ductwork
             }
         }
 
-        private IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
+        internal IEnumerable<Component> GetComponents()
         {
-            return _componentOutputs.GetValueOrDefault(component, new HashSet<IOutputPlug>());
+            return _components;
         }
 
-        private IEnumerable<IInputPlug> GetInputPlugs(Component component)
+        internal IReadOnlyDictionary<IOutputPlug, HashSet<IInputPlug>> GetConnections()
         {
-            return _componentInputs.GetValueOrDefault(component, new HashSet<IInputPlug>());
+            return _connections;
+        }
+
+        internal IEnumerable<IInputPlug> GetConnections(IOutputPlug output)
+        {
+            return _connections.GetValueOrDefault(output) ?? Enumerable.Empty<IInputPlug>();
+        }
+
+        internal FieldInfo? GetPlugField(IOutputPlug output)
+        {
+            return _plugFieldInfos.GetValueOrDefault(output);
+        }
+
+        internal FieldInfo? GetPlugField(IInputPlug input)
+        {
+            return _plugFieldInfos.GetValueOrDefault(input);
+        }
+
+        internal IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
+        {
+            return _componentOutputs.GetValueOrDefault(component) ?? Enumerable.Empty<IOutputPlug>();
+        }
+
+        internal IEnumerable<IInputPlug> GetInputPlugs(Component component)
+        {
+            return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<IInputPlug>();
         }
 
         public async Task Push<T>(OutputPlug<T> output, T value)
