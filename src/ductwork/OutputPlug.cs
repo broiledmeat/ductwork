@@ -3,7 +3,7 @@ using System;
 #nullable enable
 namespace ductwork
 {
-    internal interface IOutputPlug
+    public interface IOutputPlug
     {
         Type Type { get; }
     }

@@ -10,8 +10,6 @@ namespace ductwork
 {
     public class Graph
     {
-        public static readonly object DefaultKey = new();
-
         private readonly object _lock = new();
 
         private readonly HashSet<Component> _components = new();
@@ -19,7 +17,7 @@ namespace ductwork
         private readonly Dictionary<Component, HashSet<IOutputPlug>> _componentOutputs = new();
         private readonly Dictionary<Component, HashSet<IInputPlug>> _componentInputs = new();
 
-        private readonly Dictionary<IOutputPlug, Dictionary<object, HashSet<IInputPlug>>> _connections = new();
+        private readonly Dictionary<IOutputPlug, HashSet<IInputPlug>> _connections = new();
         private readonly Dictionary<IInputPlug, AsyncQueue<object?>> _inputQueues = new();
 
         private readonly HashSet<IOutputPlug> _outputsCompleted = new();
@@ -56,23 +54,18 @@ namespace ductwork
             }
         }
 
-        public void Connect<T>(OutputPlug<T> output, InputPlug<T> inputPlug)
-        {
-            Connect(output, DefaultKey, inputPlug);
-        }
-
-        public void Connect<T>(OutputPlug<T> output, object key, InputPlug<T> input)
+        public void Connect(IOutputPlug output, IInputPlug input)
         {
             if (!_componentOutputs.Values.Any(outputs => outputs.Contains(output)))
             {
                 throw new InvalidOperationException("Output plugs' component has not been added to the graph.");
             }
-            
+
             if (!_componentInputs.Values.Any(inputs => inputs.Contains(input)))
             {
                 throw new InvalidOperationException("Input plugs' component has not been added to the graph.");
             }
-            
+
             if (output.Type != input.Type)
             {
                 throw new InvalidOperationException(
@@ -81,15 +74,10 @@ namespace ductwork
 
             if (!_connections.ContainsKey(output))
             {
-                _connections.Add(output, new Dictionary<object, HashSet<IInputPlug>>());
+                _connections.Add(output, new HashSet<IInputPlug>());
             }
 
-            if (!_connections[output].ContainsKey(key))
-            {
-                _connections[output].Add(key, new HashSet<IInputPlug>());
-            }
-
-            _connections[output][key].Add(input);
+            _connections[output].Add(input);
         }
 
         public async Task Execute(CancellationToken token = default)
@@ -116,14 +104,13 @@ namespace ductwork
                 var allConnectedInputs = outputs
                     .Select(output => _connections.GetValueOrDefault(output))
                     .NotNull()
-                    .SelectMany(keyPair => keyPair.Values)
-                    .SelectMany(inputs => inputs)
+                    .SelectMany(inputs => inputs!)
                     .ToHashSet();
 
                 foreach (var input in allConnectedInputs)
                 {
                     var connectionsComplete = _connections
-                        .Where(outputPair => outputPair.Value.SelectMany(keyPair => keyPair.Value).Contains(input))
+                        .Where(outputPair => outputPair.Value.Contains(input))
                         .Select(outputPair => outputPair.Key)
                         .All(connectedOutput => _outputsCompleted.Contains(connectedOutput));
 
@@ -147,20 +134,15 @@ namespace ductwork
 
         public async Task Push<T>(OutputPlug<T> output, T value)
         {
-            await Push(output, DefaultKey, value);
-        }
-
-        public async Task Push<T>(OutputPlug<T> output, object key, T value)
-        {
-            if (!_connections.ContainsKey(output) || !_connections[output].ContainsKey(key))
+            if (!_connections.ContainsKey(output))
             {
                 return;
             }
 
-            var tasks = _connections[output][key]
+            var tasks = _connections[output]
                 .Select(input => _inputQueues.GetValueOrDefault(input))
                 .NotNull()
-                .Select(queue => queue.Enqueue(value));
+                .Select(queue => queue!.Enqueue(value));
             await Task.WhenAll(tasks);
         }
 
@@ -183,12 +165,12 @@ namespace ductwork
                     continue;
                 }
 
-                return (T)await queue.Dequeue(token);
+                return (T) (await queue.Dequeue(token))!;
             }
         }
 
         public int Count<T>(InputPlug<T> input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
-        
+
         public bool IsFinished<T>(InputPlug<T> input) => Count(input) == 0 && _inputsCompleted.Contains(input);
     }
 }
