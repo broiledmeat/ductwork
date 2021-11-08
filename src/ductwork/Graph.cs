@@ -133,37 +133,43 @@ namespace ductwork
             }
         }
 
-        internal IEnumerable<Component> GetComponents()
+        public IEnumerable<Component> GetComponents()
         {
             return _components;
         }
 
-        internal IReadOnlyDictionary<IOutputPlug, HashSet<IInputPlug>> GetConnections()
+        public IEnumerable<(IOutputPlug, IInputPlug)> GetConnections()
         {
-            return _connections;
+            foreach (var (output, inputs) in _connections)
+            {
+                foreach (var input in inputs)
+                {
+                    yield return (output, input);
+                }
+            }
         }
 
-        internal IEnumerable<IInputPlug> GetConnections(IOutputPlug output)
+        public IEnumerable<IInputPlug> GetConnections(IOutputPlug output)
         {
             return _connections.GetValueOrDefault(output) ?? Enumerable.Empty<IInputPlug>();
         }
 
-        internal FieldInfo? GetPlugField(IOutputPlug output)
+        public FieldInfo? GetPlugField(IOutputPlug output)
         {
             return _plugFieldInfos.GetValueOrDefault(output);
         }
 
-        internal FieldInfo? GetPlugField(IInputPlug input)
+        public FieldInfo? GetPlugField(IInputPlug input)
         {
             return _plugFieldInfos.GetValueOrDefault(input);
         }
 
-        internal IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
+        public IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
         {
             return _componentOutputs.GetValueOrDefault(component) ?? Enumerable.Empty<IOutputPlug>();
         }
 
-        internal IEnumerable<IInputPlug> GetInputPlugs(Component component)
+        public IEnumerable<IInputPlug> GetInputPlugs(Component component)
         {
             return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<IInputPlug>();
         }
