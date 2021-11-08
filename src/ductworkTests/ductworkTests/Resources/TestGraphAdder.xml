@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graph>
+    <component key="SenderA" type="SenderComponent:int">
+        <arg type="array:int">
+            <item>1</item>
+            <item>2</item>
+            <item>3</item>
+        </arg>
+    </component>
+    <component key="SenderB" type="SenderComponent:int">
+        <arg type="array:int">
+            <item>5</item>
+            <item>6</item>
+        </arg>
+    </component>
+    <component key="Adder" type="AdderComponent"/>
+    <component key="Receiver" type="ReceiverComponent:int"/>
+
+    <connection out="SenderA.Out" in="Adder.InX"/>
+    <connection out="SenderB.Out" in="Adder.InY"/>
+    <connection out="Adder.Out" in="Receiver.In"/>
+</graph>

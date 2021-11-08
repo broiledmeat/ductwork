@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graph>
+    <component key="SenderA" type="SenderComponent:string">
+        <arg type="array:string">
+            <item>foo</item>
+            <item>bar</item>
+            <item>baz</item>
+        </arg>
+    </component>
+    <component key="SenderB" type="SenderComponent:string">
+        <arg type="array:string">
+            <item>fizz</item>
+            <item>buzz</item>
+        </arg>
+    </component>
+    <component key="ReceiverA" type="ReceiverComponent:string"/>
+    <component key="ReceiverB" type="ReceiverComponent:string"/>
+
+    <connection out="SenderA.Out" in="ReceiverA.In"/>
+    <connection out="SenderA.Out" in="ReceiverB.In"/>
+    
+    <connection out="SenderB.Out" in="ReceiverB.In"/>
+</graph>
