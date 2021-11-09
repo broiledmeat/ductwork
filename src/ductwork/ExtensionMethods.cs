@@ -26,14 +26,6 @@ namespace ductwork
             }
         }
 
-        public static void AddEnumerable<T>(this ICollection<T> enumerable, IEnumerable<T> other)
-        {
-            foreach (var item in other)
-            {
-                enumerable.Add(item);
-            }
-        }
-        
         public static IEnumerable<XmlNode> SelectXPath(this XmlNode node, string xpath)
         {
             var nodes = node.SelectNodes(xpath);

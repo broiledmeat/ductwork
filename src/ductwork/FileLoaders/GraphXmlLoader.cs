@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security;
+using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -53,10 +54,10 @@ namespace ductwork.FileLoaders
                     type => type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name,
                     type => type);
 
-            Dictionary<string, Component> components = document
+            var components = document
                 .SelectXPath("/graph/component")
                 .Select(node => ProcessComponentNode(node, componentTypes))
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
+                .ToDictionary(pair => pair.Item1, pair => pair.Item2);
 
             components.Values
                 .ForEach(component => graph.Add(component));
@@ -82,7 +83,7 @@ namespace ductwork.FileLoaders
             return Assembly.LoadFrom(fullPath);
         }
 
-        private static KeyValuePair<string, Component> ProcessComponentNode(
+        private static (string, Component) ProcessComponentNode(
             XmlNode node,
             IReadOnlyDictionary<string, Type> componentTypes)
         {
@@ -128,12 +129,12 @@ namespace ductwork.FileLoaders
             }
 
             var component = (Component) componentConstructor.Invoke(componentArgs);
-            return new KeyValuePair<string, Component>(key, component);
+            return (key, component);
         }
 
         private static (IOutputPlug, IInputPlug) ProcessConnectionNode(
             XmlNode node,
-            Dictionary<string, Component> components)
+            IReadOnlyDictionary<string, Component> components)
         {
             var outName = node.Attributes?["out"]?.Value;
             var inName = node.Attributes?["in"]?.Value;

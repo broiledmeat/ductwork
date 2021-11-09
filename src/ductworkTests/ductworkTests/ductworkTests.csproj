@@ -7,7 +7,7 @@
 
         <Nullable>enable</Nullable>
 
-        <LangVersion>default</LangVersion>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
