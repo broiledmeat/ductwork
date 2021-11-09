@@ -39,13 +39,14 @@ namespace ductwork.FileLoaders
         {
             var graph = new Graph();
 
-            document
+            var assemblies = document
                 .SelectXPath("/graph/lib")
-                .ForEach(ProcessLibNode);
+                .Select(ProcessLibNode)
+                .Concat(new[] {Assembly.GetExecutingAssembly()})
+                .ToArray();
 
-            var componentTypes = AppDomain.CurrentDomain
-                .GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
+            var componentTypes = assemblies
+                .SelectMany(assembly => assembly.GetExportedTypes())
                 .Where(type => type.IsAssignableTo(typeof(Component)))
                 .ToDictionary(
                     type => type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name,
@@ -67,17 +68,17 @@ namespace ductwork.FileLoaders
             return graph;
         }
 
-        private static void ProcessLibNode(XmlNode node)
+        private static Assembly ProcessLibNode(XmlNode node)
         {
             var path = node.Attributes?["path"]?.Value;
+
             if (path == null)
             {
                 throw new InvalidOperationException("Lib node must have a path attribute.");
             }
 
             var fullPath = Path.GetFullPath(path);
-            Assembly.LoadFrom(fullPath);
-            Console.WriteLine($"Loaded lib {fullPath}");
+            return Assembly.LoadFrom(fullPath);
         }
 
         private static KeyValuePair<string, Component> ProcessComponentNode(
