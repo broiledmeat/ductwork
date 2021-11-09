@@ -144,5 +144,57 @@ namespace ductworkTests
 </graph>";
             Assert.Throws<XmlSchemaException>(() => GraphXmlLoader.LoadString(xml));
         }
+
+        [Test]
+        public void ThrowsOnConnectionWithInvalidOutputComponent()
+        {
+            const string xml = @"
+<graph>
+    <lib path="".\ductworkTests.dll""/>
+    <component key=""Sender"" type=""SenderComponent:int""/>
+    <component key=""Receiver"" type=""ReceiverComponent:int""/>
+    <connection out=""invalid.Out"" in=""Receiver.In""/>
+</graph>";
+            Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
+        }
+        
+        [Test]
+        public void ThrowsOnConnectionWithInvalidInputComponent()
+        {
+            const string xml = @"
+<graph>
+    <lib path="".\ductworkTests.dll""/>
+    <component key=""Sender"" type=""SenderComponent:int""/>
+    <component key=""Receiver"" type=""ReceiverComponent:int""/>
+    <connection out=""Sender.Out"" in=""Receiver.Invalid""/>
+</graph>";
+            Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
+        }
+        
+        [Test]
+        public void ThrowsOnConnectionWithInvalidOutputPlug()
+        {
+            const string xml = @"
+<graph>
+    <lib path="".\ductworkTests.dll""/>
+    <component key=""Sender"" type=""SenderComponent:int""/>
+    <component key=""Receiver"" type=""ReceiverComponent:int""/>
+    <connection out=""Sender.Invalid"" in=""Receiver.In""/>
+</graph>";
+            Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
+        }
+        
+        [Test]
+        public void ThrowsOnConnectionWithInvalidInputPlug()
+        {
+            const string xml = @"
+<graph>
+    <lib path="".\ductworkTests.dll""/>
+    <component key=""Sender"" type=""SenderComponent:int""/>
+    <component key=""Receiver"" type=""ReceiverComponent:int""/>
+    <connection out=""Sender.Out"" in=""Receiver.Invalid""/>
+</graph>";
+            Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
+        }
     }
 }
