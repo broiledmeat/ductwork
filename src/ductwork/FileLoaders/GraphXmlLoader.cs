@@ -19,6 +19,7 @@ namespace ductwork.FileLoaders
             {"string", new ValueConverter(typeof(string), node => node.InnerText.Trim())},
             {"int", new ValueConverter(typeof(int), node => Convert.ToInt32(node.InnerText.Trim()))},
             {"float", new ValueConverter(typeof(float), node => Convert.ToSingle(node.InnerText.Trim()))},
+            {"bool", new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
         };
 
         public static Graph LoadPath(string xmlFilepath)
