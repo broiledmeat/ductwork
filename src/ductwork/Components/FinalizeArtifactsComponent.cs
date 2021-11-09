@@ -33,7 +33,7 @@ namespace ductwork.Components
         
         public delegate void OnArtifactFinalized(FinalizeArtifactsComponent sender, FinalizedResult result);
 
-        public event OnArtifactFinalized? ArtifactFinalized;
+        public static event OnArtifactFinalized? ArtifactFinalized;
 
         public override async Task ExecuteIn(Graph graph, Artifact value, CancellationToken token)
         {
