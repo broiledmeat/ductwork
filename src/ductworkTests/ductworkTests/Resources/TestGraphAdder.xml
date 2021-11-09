@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <graph>
+    <lib path=".\ductworkTests.dll"/>
+    
     <component key="SenderA" type="SenderComponent:int">
         <arg type="array:int">
             <item>1</item>

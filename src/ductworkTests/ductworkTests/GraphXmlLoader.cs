@@ -103,6 +103,7 @@ namespace ductworkTests
         {
             const string xmlMissingArgs = @"
 <graph>
+    <lib path="".\ductworkTests.dll""/>
     <component key=""SenderA"" type=""SenderComponent:int""/>
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xmlMissingArgs));
@@ -110,6 +111,7 @@ namespace ductworkTests
             
             const string xmlIncorrectArgs = @"
 <graph>
+    <lib path="".\ductworkTests.dll""/>
     <component key=""SenderA"" type=""SenderComponent:string"">
         <arg type=""array:int""/>
     </component>
@@ -122,6 +124,7 @@ namespace ductworkTests
         {
             const string xml = @"
 <graph>
+    <lib path="".\ductworkTests.dll""/>
     <component key=""SenderA"" type=""SenderComponent:int"">
         <arg/>
     </component>
@@ -134,6 +137,7 @@ namespace ductworkTests
         {
             const string xml = @"
 <graph>
+    <lib path="".\ductworkTests.dll""/>
     <component key=""SenderA"" type=""SenderComponent:int"">
         <arg type=""invalid""/>
     </component>
