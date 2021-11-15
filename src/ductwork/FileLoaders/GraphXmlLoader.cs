@@ -13,6 +13,8 @@ namespace ductwork.FileLoaders
 {
     public static class GraphXmlLoader
     {
+        private const string ArrayValueTypeName = "array";
+        
         private record ValueConverter(Type Type, Func<XmlNode, object> Convert);
 
         private static readonly Dictionary<string, ValueConverter> ValueConverters = new()
@@ -72,14 +74,9 @@ namespace ductwork.FileLoaders
 
         private static Assembly ProcessLibNode(XmlNode node)
         {
-            var path = node.Attributes?["path"]?.Value;
-
-            if (path == null)
-            {
-                throw new InvalidOperationException("Lib node must have a path attribute.");
             }
 
-            var fullPath = Path.GetFullPath(path);
+            var fullPath = Path.GetFullPath(RequireAttribute(node, "path"));
             return Assembly.LoadFrom(fullPath);
         }
 
@@ -87,18 +84,8 @@ namespace ductwork.FileLoaders
             XmlNode node,
             IReadOnlyDictionary<string, Type> componentTypes)
         {
-            var key = node.Attributes?["key"]?.Value;
-            var fullTypeName = node.Attributes?["type"]?.Value;
-
-            if (key == null)
-            {
-                throw new XmlSchemaException("Component node must have a key attribute.");
-            }
-
-            if (fullTypeName == null)
-            {
-                throw new XmlSchemaException("Component node must have a type attribute.");
-            }
+            var key = RequireAttribute(node, "key");
+            var fullTypeName = RequireAttribute(node, "type");
 
             var (mainTypeName, subTypeName) = SplitTypeNames(fullTypeName);
 
@@ -136,18 +123,8 @@ namespace ductwork.FileLoaders
             XmlNode node,
             IReadOnlyDictionary<string, Component> components)
         {
-            var outName = node.Attributes?["out"]?.Value;
-            var inName = node.Attributes?["in"]?.Value;
-
-            if (outName == null)
-            {
-                throw new XmlSchemaException("Connection node must have an out attribute.");
-            }
-
-            if (inName == null)
-            {
-                throw new XmlSchemaException("Connection node must have an in attribute.");
-            }
+            var outName = RequireAttribute(node, "out");
+            var inName = RequireAttribute(node, "in");
 
             var (outComponentName, outPlugName) = SplitConnectionNames(outName);
             var (inComponentName, inPlugName) = SplitConnectionNames(inName);
@@ -186,16 +163,11 @@ namespace ductwork.FileLoaders
 
         private static object ProcessArgNode(XmlNode node)
         {
-            var typeName = node.Attributes?["type"]?.Value;
-
-            if (typeName == null)
-            {
-                throw new XmlSchemaException("Variable node must have a type attribute.");
-            }
+            var typeName = RequireAttribute(node, "type");
 
             var (mainTypeName, subTypeName) = SplitTypeNames(typeName);
 
-            if (mainTypeName != "array")
+            if (mainTypeName != ArrayValueTypeName)
             {
                 return GetValueConverter(mainTypeName).Convert(node);
             }
@@ -238,6 +210,17 @@ namespace ductwork.FileLoaders
             }
 
             return (parts[0], parts[1]);
+        }
+
+        private static string RequireAttribute(XmlNode node, string name)
+        {
+            return node.Attributes?[name]?.Value ??
+                throw new InvalidOperationException($"Node must have a `{name}` attribute.");
+        }
+
+        private static string? GetAttribute(XmlNode node, string name)
+        {
+            return node.Attributes?[name]?.Value;
         }
     }
 }
