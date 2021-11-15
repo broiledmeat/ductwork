@@ -7,6 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Xml;
 using System.Xml.Schema;
+using NLog;
+using NLog.Targets;
 
 #nullable enable
 namespace ductwork.FileLoaders
@@ -43,6 +45,10 @@ namespace ductwork.FileLoaders
         {
             var graph = new Graph();
 
+            document
+                .SelectXPath("/graph/config")
+                .ForEach(node => ProcessConfigNode(node, graph));
+
             var assemblies = document
                 .SelectXPath("/graph/lib")
                 .Select(ProcessLibNode)
@@ -72,10 +78,28 @@ namespace ductwork.FileLoaders
             return graph;
         }
 
+        private static void ProcessConfigNode(XmlNode node, Graph graph)
+        {
+            foreach (var logNode in node.SelectXPath("logfile"))
+            {
+                var fullPath = Path.GetFullPath(RequireAttribute(logNode, "path"));
+                graph.Log.Debug($"Added file log \"{fullPath}\"");
+                var config = LogManager.Configuration;
+                config.AddRule(
+                    LogLevel.Trace,
+                    LogLevel.Fatal,
+                    new FileTarget
+                    {
+                        FileName = fullPath,
+                        Layout = Graph.DefaultLogFormat
+                    },
+                    graph.Log.Name);
+                LogManager.Configuration = config;
+            }
+        }
+
         private static Assembly ProcessLibNode(XmlNode node)
         {
-            }
-
             var fullPath = Path.GetFullPath(RequireAttribute(node, "path"));
             return Assembly.LoadFrom(fullPath);
         }
@@ -116,6 +140,7 @@ namespace ductwork.FileLoaders
             }
 
             var component = (Component) componentConstructor.Invoke(componentArgs);
+            component.DisplayName = key;
             return (key, component);
         }
 

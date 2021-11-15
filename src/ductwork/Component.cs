@@ -7,6 +7,8 @@ namespace ductwork
 {
     public abstract class Component
     {
+        public string DisplayName { get; set; } = Guid.NewGuid().ToString();
+        
         public abstract Task Execute(Graph graph, CancellationToken token);
         
         public override string ToString()

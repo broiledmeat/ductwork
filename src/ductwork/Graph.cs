@@ -4,6 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
+using NLog.Targets.Wrappers;
 
 #nullable enable
 namespace ductwork
@@ -25,6 +29,23 @@ namespace ductwork
         private readonly HashSet<IOutputPlug> _outputsCompleted = new();
         private readonly HashSet<IInputPlug> _inputsCompleted = new();
 
+        public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message}";
+        public readonly Logger Log;
+        
+        public string DisplayName { get; set; } = Guid.NewGuid().ToString();
+
+        static Graph()
+        {
+            var config = new LoggingConfiguration();
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, new ColoredConsoleTarget {Layout = DefaultLogFormat});
+            LogManager.Configuration = config;
+        }
+
+        public Graph()
+        {
+            Log = LogManager.GetLogger($"{GetType().FullName}_{DisplayName}");
+        }
+
         public void Add(params Component[] components)
         {
             static Dictionary<FieldInfo, T> GetFieldsOfType<T>(Component obj)
@@ -41,6 +62,8 @@ namespace ductwork
             foreach (var component in components)
             {
                 _components.Add(component);
+
+                Log.Debug($"Added component {component.DisplayName}<{component.GetType().Name}>");
 
                 var outputs = GetFieldsOfType<IOutputPlug>(component);
                 var inputs = GetFieldsOfType<IInputPlug>(component);
@@ -67,12 +90,21 @@ namespace ductwork
 
         public void Connect(IOutputPlug output, IInputPlug input)
         {
-            if (!_componentOutputs.Values.Any(outputs => outputs.Contains(output)))
+            var outputComponent = _componentOutputs
+                .Where(pair => pair.Value.Contains(output))
+                .Select(pair => pair.Key)
+                .FirstOrDefault();
+            var inputComponent = _componentInputs
+                .Where(pair => pair.Value.Contains(input))
+                .Select(pair => pair.Key)
+                .FirstOrDefault();
+
+            if (outputComponent == null)
             {
                 throw new InvalidOperationException("Output plugs' component has not been added to the graph.");
             }
 
-            if (!_componentInputs.Values.Any(inputs => inputs.Contains(input)))
+            if (inputComponent == null)
             {
                 throw new InvalidOperationException("Input plugs' component has not been added to the graph.");
             }
@@ -89,18 +121,27 @@ namespace ductwork
             }
 
             _connections[output].Add(input);
+
+            var outputFieldName = _plugFieldInfos.GetValueOrDefault(output)?.Name ?? "Out";
+            var inputFieldName = _plugFieldInfos.GetValueOrDefault(input)?.Name ?? "In";
+            
+            Log.Debug($"Connected {outputComponent.DisplayName}.{outputFieldName} -> " +
+                      $"{inputComponent.DisplayName}.{inputFieldName}");
         }
 
         public async Task Execute(CancellationToken token = default)
         {
+            Log.Debug($"Started executing graph {DisplayName}");
             var componentTasks = _components
                 .Select(component => Task.Run(() => ExecuteComponent(component, token).Wait(token), token))
                 .ToArray();
             await Task.WhenAll(componentTasks);
+            Log.Debug($"Finished executing graph {DisplayName}");
         }
 
         private async Task ExecuteComponent(Component component, CancellationToken token)
         {
+            Log.Debug($"Started executing component {component.DisplayName}");
             await component.Execute(this, token);
 
             lock (_lock)
@@ -131,6 +172,7 @@ namespace ductwork
                     }
                 }
             }
+            Log.Debug($"Finished executing component {component.DisplayName}");
         }
 
         public IEnumerable<Component> GetComponents()
@@ -176,7 +218,12 @@ namespace ductwork
 
         public async Task Push<T>(OutputPlug<T> output, T value)
         {
-            if (!_connections.ContainsKey(output))
+            var component = _componentOutputs
+                .Where(pair => pair.Value.Contains(output))
+                .Select(pair => pair.Key)
+                .FirstOrDefault();
+            
+            if (component == null || !_connections.ContainsKey(output))
             {
                 return;
             }
@@ -186,6 +233,9 @@ namespace ductwork
                 .NotNull()
                 .Select(queue => queue!.Enqueue(value));
             await Task.WhenAll(tasks);
+            
+            var outputFieldName = _plugFieldInfos.GetValueOrDefault(output)?.Name ?? "Out";
+            Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {value?.ToString()}");
         }
 
         public async Task<T> Get<T>(InputPlug<T> input, CancellationToken token = default)

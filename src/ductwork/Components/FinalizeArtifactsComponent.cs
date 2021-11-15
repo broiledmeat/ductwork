@@ -31,10 +31,6 @@ namespace ductwork.Components
     {
         public readonly OutputPlug<FinalizedResult> Out = new();
         
-        public delegate void OnArtifactFinalized(FinalizeArtifactsComponent sender, FinalizedResult result);
-
-        public static event OnArtifactFinalized? ArtifactFinalized;
-
         public override async Task ExecuteIn(Graph graph, Artifact value, CancellationToken token)
         {
             var state = FinalizedResult.FinalizedState.SucceededSkipped;
@@ -55,10 +51,25 @@ namespace ductwork.Components
                 }
             }
 
+            if (state == FinalizedResult.FinalizedState.Succeeded)
+            {
+                graph.Log.Info($"Finalized {DisplayName} {value}");
+            }
+            else if (state == FinalizedResult.FinalizedState.SucceededSkipped)
+            {
+                graph.Log.Info($"Skipped finalizing {DisplayName} {value}");
+            }
+            else if (exception != null)
+            {
+                graph.Log.Error(exception, $"Failed finalizing {DisplayName} {value}");
+            }
+            else
+            {
+                graph.Log.Warn($"Failed finalizing {DisplayName} {value}");
+            }
+
             var result = new FinalizedResult(value, state, exception);
             await graph.Push(Out, result);
-
-            ArtifactFinalized?.Invoke(this, result);
         }
     }
 }
