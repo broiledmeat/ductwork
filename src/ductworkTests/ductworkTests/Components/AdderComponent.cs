@@ -1,14 +1,16 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
+using ductwork.Components;
 
+#nullable enable
 namespace ductworkTests.Components
 {
     public class AdderComponent : Component
     {
-        public readonly InputPlug<int> InX = new();
-        public readonly InputPlug<int> InY = new();
-        public readonly OutputPlug<int> Out = new();
+        public readonly InputPlug<IObjectArtifact> InX = new();
+        public readonly InputPlug<IObjectArtifact> InY = new();
+        public readonly OutputPlug<IntArtifact> Out = new();
 
         public override async Task Execute(Graph graph, CancellationToken token)
         {
@@ -16,7 +18,14 @@ namespace ductworkTests.Components
             {
                 var x = await graph.Get(InX, token);
                 var y = await graph.Get(InY, token);
-                await graph.Push(Out, x + y);
+
+                if (x is not IntArtifact xInt || y is not IntArtifact yInt)
+                {
+                    continue;
+                }
+            
+                var artifact = new IntArtifact(xInt.Value + yInt.Value);
+                await graph.Push(Out, artifact);
             }
         }
     }

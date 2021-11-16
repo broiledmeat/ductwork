@@ -6,88 +6,91 @@ using ductwork.FileLoaders;
 using ductworkTests.Components;
 using NUnit.Framework;
 
+#nullable enable
 namespace ductworkTests
 {
-    public class GraphSerializationTests
+    public class GraphXmlLoaderTests
     {
         [SetUp]
         public void Setup()
         {
         }
-        
+
         [Test]
         public void ValidXmlLoadsAndExecutesWithExpectedOutput_Receivers()
         {
             const string graphPath = "./Resources/TestGraphReceivers.xml";
             var graph = GraphXmlLoader.LoadPath(graphPath);
-        
+
             var components = graph.GetComponents().ToArray();
             var connections = graph.GetConnections().ToArray();
-        
+
             Assert.AreEqual(4, components.Length);
             Assert.AreEqual(3, connections.Length);
-        
+
             Assert.That(new HashSet<Type>
                 {
-                    typeof(SenderComponent<string>),
-                    typeof(SenderComponent<string>),
-                    typeof(ReceiverComponent<string>),
-                    typeof(ReceiverComponent<string>),
+                    typeof(SenderComponent),
+                    typeof(SenderComponent),
+                    typeof(ReceiverComponent),
+                    typeof(ReceiverComponent),
                 }
                 .SetEquals(components.Select(component => component.GetType()).ToHashSet()));
-        
+
             graph.Execute().Wait();
-        
-            var receivers = components.OfType<ReceiverComponent<string>>().ToArray();
+
+            var receivers = components.OfType<ReceiverComponent>().ToArray();
             var receiverA = receivers.FirstOrDefault(receiver => receiver.Values.Count == 3);
             var receiverB = receivers.FirstOrDefault(receiver => receiver.Values.Count == 5);
-        
+
             Assert.NotNull(receiverA);
             Assert.NotNull(receiverB);
-            Assert.That(new HashSet<string> {"foo", "bar", "baz"}.SetEquals(receiverA?.Values.ToHashSet()!));
-            Assert.That(
-                new HashSet<string> {"foo", "bar", "baz", "fizz", "buzz"}
-                .SetEquals(receiverB?.Values.ToHashSet()!));
+            Assert.That(new HashSet<string> {"foo", "bar", "baz"}
+                .SetEquals(receiverA!.Values.OfType<string>().ToHashSet()));
+            Assert.That(new HashSet<string> {"foo", "bar", "baz", "fizz", "buzz"}
+                .SetEquals(receiverB!.Values.OfType<string>().ToHashSet()));
         }
-        
+
         [Test]
         public void ValidXmlLoadsAndExecutesWithExpectedOutput_Adder()
         {
             const string graphPath = "./Resources/TestGraphAdder.xml";
             var graph = GraphXmlLoader.LoadPath(graphPath);
-        
+
             var components = graph.GetComponents().ToArray();
             var connections = graph.GetConnections().ToArray();
-        
+
             Assert.AreEqual(4, components.Length);
             Assert.AreEqual(3, connections.Length);
-        
+
             Assert.That(new HashSet<Type>
                 {
-                    typeof(SenderComponent<int>),
-                    typeof(SenderComponent<int>),
+                    typeof(SenderComponent),
+                    typeof(SenderComponent),
                     typeof(AdderComponent),
-                    typeof(ReceiverComponent<int>),
+                    typeof(ReceiverComponent),
                 }
                 .SetEquals(components.Select(component => component.GetType()).ToHashSet()));
-        
+
             graph.Execute().Wait();
-        
-            var receiver = components.OfType<ReceiverComponent<int>>().First();
-        
-            Assert.That(new HashSet<int> {6, 8}.SetEquals(receiver.Values.ToHashSet()));
+
+            var receiver = components.OfType<ReceiverComponent>().FirstOrDefault();
+
+            Assert.NotNull(receiver);
+            Assert.That(new HashSet<int> {6, 8}
+                .SetEquals(receiver!.Values.OfType<int>().ToHashSet()));
         }
-        
+
         [Test]
         public void ThrowsOnComponentWithNoKey()
         {
             const string xml = @"
 <graph>
-    <component type=""SenderComponent""/>
+    <component type=""ArrayGenericComponent""/>
 </graph>";
             Assert.Throws<XmlSchemaException>(() => GraphXmlLoader.LoadString(xml));
         }
-        
+
         [Test]
         public void ThrowsOnComponentWithNoType()
         {
@@ -104,28 +107,28 @@ namespace ductworkTests
             const string xmlMissingArgs = @"
 <graph>
     <lib path="".\ductworkTests.dll""/>
-    <component key=""SenderA"" type=""SenderComponent:int""/>
+    <component key=""Generic"" type=""ArrayGenericComponent:int""/>
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xmlMissingArgs));
-            
-            
+
+
             const string xmlIncorrectArgs = @"
 <graph>
     <lib path="".\ductworkTests.dll""/>
-    <component key=""SenderA"" type=""SenderComponent:string"">
+    <component key=""Generic"" type=""ArrayGenericComponent:string"">
         <arg type=""array:int""/>
     </component>
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xmlIncorrectArgs));
         }
-        
+
         [Test]
         public void ThrowsOnComponentWithNoArgType()
         {
             const string xml = @"
 <graph>
     <lib path="".\ductworkTests.dll""/>
-    <component key=""SenderA"" type=""SenderComponent:int"">
+    <component key=""Generic"" type=""ArrayGenericComponent:int"">
         <arg/>
     </component>
 </graph>";
@@ -138,7 +141,7 @@ namespace ductworkTests
             const string xml = @"
 <graph>
     <lib path="".\ductworkTests.dll""/>
-    <component key=""SenderA"" type=""SenderComponent:int"">
+    <component key=""Generic"" type=""ArrayGenericComponent:int"">
         <arg type=""invalid""/>
     </component>
 </graph>";
@@ -157,7 +160,7 @@ namespace ductworkTests
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
         }
-        
+
         [Test]
         public void ThrowsOnConnectionWithInvalidInputComponent()
         {
@@ -170,7 +173,7 @@ namespace ductworkTests
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
         }
-        
+
         [Test]
         public void ThrowsOnConnectionWithInvalidOutputPlug()
         {
@@ -183,15 +186,15 @@ namespace ductworkTests
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
         }
-        
+
         [Test]
         public void ThrowsOnConnectionWithInvalidInputPlug()
         {
             const string xml = @"
 <graph>
     <lib path="".\ductworkTests.dll""/>
-    <component key=""Sender"" type=""SenderComponent:int""/>
-    <component key=""Receiver"" type=""ReceiverComponent:int""/>
+    <component key=""Sender"" type=""SenderComponent""/>
+    <component key=""Receiver"" type=""ReceiverComponent""/>
     <connection out=""Sender.Out"" in=""Receiver.Invalid""/>
 </graph>";
             Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));

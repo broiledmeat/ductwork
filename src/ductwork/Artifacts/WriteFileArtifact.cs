@@ -6,45 +6,45 @@ using Force.Crc32;
 #nullable enable
 namespace ductwork.Artifacts
 {
-    public class WriteFileArtifact : Artifact
+    public class WriteFileArtifact : IFinalizingArtifact, ITargetFilePathArtifact
     {
         public readonly byte[] Content;
-        public readonly string TargetPath;
+        public string TargetFilePath { get; }
 
         public WriteFileArtifact(byte[] content, string targetPath)
         {
             Content = content;
-            TargetPath = targetPath;
+            TargetFilePath = targetPath;
 
             ContentId = Crc32Algorithm.Compute(Content).ToString();
         }
 
-        public override string Id => TargetPath;
+        public string Id => TargetFilePath;
         
-        public override string ContentId { get; }
+        public string ContentId { get; }
         
-        public override bool RequiresFinalize()
+        public bool RequiresFinalize()
         {
-            if (!File.Exists(TargetPath))
+            if (!File.Exists(TargetFilePath))
             {
                 return true;
             }
             
-            var targetInfo = new FileInfo(TargetPath);
+            var targetInfo = new FileInfo(TargetFilePath);
 
             return Content.Length != targetInfo.Length;
         }
 
-        public override async Task<bool> Finalize(CancellationToken token)
+        public async Task<bool> Finalize(CancellationToken token)
         {
-            var dir = Path.GetDirectoryName(TargetPath);
+            var dir = Path.GetDirectoryName(TargetFilePath);
 
             if (dir != null)
             {
                 Directory.CreateDirectory(dir);
             }
 
-            await File.WriteAllBytesAsync(TargetPath, Content, token);
+            await File.WriteAllBytesAsync(TargetFilePath, Content, token);
             return await Task.FromResult(true);
         }
     }

@@ -5,51 +5,51 @@ using System.Threading.Tasks;
 #nullable enable
 namespace ductwork.Artifacts
 {
-    public class CopyFileArtifact : Artifact
+    public class CopyFileArtifact : IFinalizingArtifact, IFilePathAndTargetFilePathArtifact
     {
-        public readonly string SourcePath;
-        public readonly string TargetPath;
+        public string FilePath { get; }
+        public string TargetFilePath { get; }
         
         public CopyFileArtifact(string sourcePath, string targetPath)
         {
-            SourcePath = sourcePath;
-            TargetPath = targetPath;
+            FilePath = sourcePath;
+            TargetFilePath = targetPath;
             
-            var info = new FileInfo(SourcePath);
+            var info = new FileInfo(FilePath);
             ContentId = $"{info.Length};{info.LastWriteTimeUtc}";
         }
 
-        public override string Id => TargetPath;
+        public string Id => TargetFilePath;
 
-        public override string ContentId { get; }
+        public string ContentId { get; }
 
-        public override bool RequiresFinalize()
+        public bool RequiresFinalize()
         {
-            if (!File.Exists(TargetPath))
+            if (!File.Exists(TargetFilePath))
             {
                 return true;
             }
             
-            var sourceInfo = new FileInfo(SourcePath);
-            var targetInfo = new FileInfo(TargetPath);
+            var sourceInfo = new FileInfo(FilePath);
+            var targetInfo = new FileInfo(TargetFilePath);
 
             return sourceInfo.Length != targetInfo.Length ||
                    sourceInfo.LastWriteTimeUtc != targetInfo.LastWriteTimeUtc;
         }
 
-        public override async Task<bool> Finalize(CancellationToken token)
+        public async Task<bool> Finalize(CancellationToken token)
         {
-            var dir = Path.GetDirectoryName(TargetPath);
+            var dir = Path.GetDirectoryName(TargetFilePath);
             
             if (dir != null)
             {
                 Directory.CreateDirectory(dir);
             }
             
-            var sourceInfo = new FileInfo(SourcePath);
+            var sourceInfo = new FileInfo(FilePath);
 
-            File.Copy(SourcePath, TargetPath, true);
-            File.SetLastWriteTimeUtc(TargetPath, sourceInfo.LastWriteTimeUtc);
+            File.Copy(FilePath, TargetFilePath, true);
+            File.SetLastWriteTimeUtc(TargetFilePath, sourceInfo.LastWriteTimeUtc);
             return await Task.FromResult(true);
         }
     }

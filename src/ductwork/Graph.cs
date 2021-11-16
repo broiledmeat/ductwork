@@ -4,10 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ductwork.Artifacts;
+using ductwork.Components;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
-using NLog.Targets.Wrappers;
 
 #nullable enable
 namespace ductwork
@@ -31,7 +32,7 @@ namespace ductwork
 
         public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message}";
         public readonly Logger Log;
-        
+
         public string DisplayName { get; set; } = Guid.NewGuid().ToString();
 
         static Graph()
@@ -124,7 +125,7 @@ namespace ductwork
 
             var outputFieldName = _plugFieldInfos.GetValueOrDefault(output)?.Name ?? "Out";
             var inputFieldName = _plugFieldInfos.GetValueOrDefault(input)?.Name ?? "In";
-            
+
             Log.Debug($"Connected {outputComponent.DisplayName}.{outputFieldName} -> " +
                       $"{inputComponent.DisplayName}.{inputFieldName}");
         }
@@ -172,6 +173,7 @@ namespace ductwork
                     }
                 }
             }
+
             Log.Debug($"Finished executing component {component.DisplayName}");
         }
 
@@ -216,13 +218,13 @@ namespace ductwork
             return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<IInputPlug>();
         }
 
-        public async Task Push<T>(OutputPlug<T> output, T value)
+        public async Task Push<T>(OutputPlug<T> output, T value) where T : IArtifact
         {
             var component = _componentOutputs
                 .Where(pair => pair.Value.Contains(output))
                 .Select(pair => pair.Key)
                 .FirstOrDefault();
-            
+
             if (component == null || !_connections.ContainsKey(output))
             {
                 return;
@@ -233,12 +235,12 @@ namespace ductwork
                 .NotNull()
                 .Select(queue => queue!.Enqueue(value));
             await Task.WhenAll(tasks);
-            
+
             var outputFieldName = _plugFieldInfos.GetValueOrDefault(output)?.Name ?? "Out";
             Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {value?.ToString()}");
         }
 
-        public async Task<T> Get<T>(InputPlug<T> input, CancellationToken token = default)
+        public async Task<T> Get<T>(InputPlug<T> input, CancellationToken token = default) where T : IArtifact
         {
             if (!_inputQueues.ContainsKey(input))
             {
@@ -261,8 +263,10 @@ namespace ductwork
             }
         }
 
-        public int Count<T>(InputPlug<T> input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
+        public int Count<T>(InputPlug<T> input) where T : IArtifact =>
+            _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
 
-        public bool IsFinished<T>(InputPlug<T> input) => Count(input) == 0 && _inputsCompleted.Contains(input);
+        public bool IsFinished<T>(InputPlug<T> input) where T : IArtifact =>
+            Count(input) == 0 && _inputsCompleted.Contains(input);
     }
 }

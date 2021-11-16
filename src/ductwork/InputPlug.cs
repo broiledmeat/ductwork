@@ -1,4 +1,5 @@
 using System;
+using ductwork.Artifacts;
 
 #nullable enable
 namespace ductwork
@@ -7,8 +8,8 @@ namespace ductwork
     {
         Type Type { get; }
     }
-    
-    public class InputPlug<T> : IInputPlug
+
+    public class InputPlug<T> : IInputPlug where T : IArtifact
     {
         public Type Type => typeof(T);
     }

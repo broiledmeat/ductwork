@@ -6,7 +6,7 @@ using ductwork.Artifacts;
 #nullable enable
 namespace ductwork.Components
 {
-    public class FinalizedResult
+    public class FinalizedResult : IArtifact
     {
         public enum FinalizedState
         {
@@ -15,11 +15,11 @@ namespace ductwork.Components
             SucceededSkipped,
         }
 
-        public Artifact Artifact;
+        public IFinalizingArtifact Artifact;
         public FinalizedState State;
         public Exception? Exception;
 
-        public FinalizedResult(Artifact artifact, FinalizedState state, Exception? exception)
+        public FinalizedResult(IFinalizingArtifact artifact, FinalizedState state, Exception? exception)
         {
             Artifact = artifact;
             State = state;
@@ -27,11 +27,11 @@ namespace ductwork.Components
         }
     }
 
-    public class FinalizeArtifactsComponent : SingleInComponent<Artifact>
+    public class FinalizeArtifactsComponent : SingleInComponent<IFinalizingArtifact>
     {
         public readonly OutputPlug<FinalizedResult> Out = new();
-        
-        public override async Task ExecuteIn(Graph graph, Artifact value, CancellationToken token)
+
+        protected override async Task ExecuteIn(Graph graph, IFinalizingArtifact value, CancellationToken token)
         {
             var state = FinalizedResult.FinalizedState.SucceededSkipped;
             Exception? exception = null;
@@ -68,8 +68,8 @@ namespace ductwork.Components
                 graph.Log.Warn($"Failed finalizing {DisplayName} {value}");
             }
 
-            var result = new FinalizedResult(value, state, exception);
-            await graph.Push(Out, result);
+            var artifact = new FinalizedResult(value, state, exception);
+            await graph.Push(Out, artifact);
         }
     }
 }
