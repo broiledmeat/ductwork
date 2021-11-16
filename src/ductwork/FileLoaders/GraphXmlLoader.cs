@@ -239,7 +239,7 @@ namespace ductwork.FileLoaders
         private static string RequireAttribute(XmlNode node, string name)
         {
             return node.Attributes?[name]?.Value ??
-                throw new InvalidOperationException($"Node must have a `{name}` attribute.");
+                throw new XmlSchemaException($"Node must have a `{name}` attribute.");
         }
 
         private static string? GetAttribute(XmlNode node, string name)
