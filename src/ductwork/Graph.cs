@@ -110,7 +110,7 @@ namespace ductwork
                 throw new InvalidOperationException("Input plugs' component has not been added to the graph.");
             }
 
-            if (output.Type != input.Type)
+            if (!output.Type.IsAssignableTo(input.Type))
             {
                 throw new InvalidOperationException(
                     $"Output type of {output.Type} does not match Input type of {input.Type}");
