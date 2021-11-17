@@ -15,20 +15,20 @@ namespace ductwork
 {
     public class Graph
     {
-        private readonly object _lock = new();
+        protected readonly object _lock = new();
 
-        private readonly HashSet<Component> _components = new();
+        protected readonly HashSet<Component> _components = new();
 
-        private readonly Dictionary<Component, HashSet<IOutputPlug>> _componentOutputs = new();
-        private readonly Dictionary<Component, HashSet<IInputPlug>> _componentInputs = new();
+        protected readonly Dictionary<Component, HashSet<IOutputPlug>> _componentOutputs = new();
+        protected readonly Dictionary<Component, HashSet<IInputPlug>> _componentInputs = new();
 
-        private readonly Dictionary<object, FieldInfo> _plugFieldInfos = new();
+        protected readonly Dictionary<object, FieldInfo> _plugFieldInfos = new();
 
-        private readonly Dictionary<IOutputPlug, HashSet<IInputPlug>> _connections = new();
-        private readonly Dictionary<IInputPlug, AsyncQueue<object?>> _inputQueues = new();
+        protected readonly Dictionary<IOutputPlug, HashSet<IInputPlug>> _connections = new();
+        protected readonly Dictionary<IInputPlug, AsyncQueue<object?>> _inputQueues = new();
 
-        private readonly HashSet<IOutputPlug> _outputsCompleted = new();
-        private readonly HashSet<IInputPlug> _inputsCompleted = new();
+        protected readonly HashSet<IOutputPlug> _outputsCompleted = new();
+        protected readonly HashSet<IInputPlug> _inputsCompleted = new();
 
         public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message}";
         public readonly Logger Log;
