@@ -80,4 +80,26 @@ public class GraphTests
 
         Assert.AreEqual(valueA + valueB, receiver.Values.FirstOrDefault());
     }
+        
+    [Test]
+    public void ThrowsOnConnectionWithUnaddedComponents()
+    {
+        var graph = new Graph {DisplayName = nameof(ThrowsOnConnectionWithUnaddedComponents)};
+        var dirIter = new SenderComponent(Array.Empty<object>()) {DisplayName = "Sender"};
+        var receiver = new ReceiverComponent {DisplayName = "Receiver"};
+
+        Assert.Throws<InvalidOperationException>(() => graph.Connect(dirIter.Out, receiver.In));
+    }
+
+    [Test]
+    public void ThrowsOnConnectionWithMismatchedTypes()
+    {
+        var graph = new Graph {DisplayName = nameof(ThrowsOnConnectionWithMismatchedTypes)};
+        var dirIter = new DirectoryFilePathIteratorComponent("") {DisplayName = "DirIter"};
+        var receiver = new ReceiverComponent {DisplayName = "Receiver"};
+            
+        graph.Add(dirIter, receiver);
+            
+        Assert.Throws<InvalidOperationException>(() => graph.Connect(dirIter.Out, receiver.In));
+    }
 }
