@@ -4,29 +4,28 @@ using System.Threading.Tasks;
 using ductwork.Artifacts;
 
 #nullable enable
-namespace ductwork.Components
+namespace ductwork.Components;
+
+public class DirectoryFilePathIteratorComponent : SingleOutComponent<FilePathArtifact>
 {
-    public class DirectoryFilePathIteratorComponent : SingleOutComponent<FilePathArtifact>
+    public readonly string Path;
+    public readonly bool IsRecursive;
+
+    public DirectoryFilePathIteratorComponent(string path, bool isRecursive = true)
     {
-        public readonly string Path;
-        public readonly bool IsRecursive;
+        Path = path;
+        IsRecursive = isRecursive;
+    }
 
-        public DirectoryFilePathIteratorComponent(string path, bool isRecursive = true)
+    public override async Task Execute(Graph graph, CancellationToken token)
+    {
+        var options = IsRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+        foreach (var path in Directory.EnumerateFiles(Path, "*.*", options))
         {
-            Path = path;
-            IsRecursive = isRecursive;
-        }
-
-        public override async Task Execute(Graph graph, CancellationToken token)
-        {
-            var options = IsRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-            foreach (var path in Directory.EnumerateFiles(Path, "*.*", options))
-            {
-                token.ThrowIfCancellationRequested();
-                var artifact = new FilePathArtifact(path);
-                await graph.Push(Out, artifact);
-            }
+            token.ThrowIfCancellationRequested();
+            var artifact = new FilePathArtifact(path);
+            await graph.Push(Out, artifact);
         }
     }
 }

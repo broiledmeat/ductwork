@@ -6,18 +6,17 @@ using CliFx.Infrastructure;
 using ductwork.Components;
 using ductwork.FileLoaders;
 
-namespace ductworkCLI.Commands
-{
-    [Command("build")]
-    public class BuildCommand : ICommand
-    {
-        [CommandParameter(0, Description = "Path of the XML graph to load.")]
-        public string Path { get; set; } = "";
+namespace ductworkCLI.Commands;
 
-        public async ValueTask ExecuteAsync(IConsole console)
-        {
-            var graph = GraphXmlLoader.LoadPath(Path);
-            await graph.Execute();
-        }
+[Command("build")]
+public class BuildCommand : ICommand
+{
+    [CommandParameter(0, Description = "Path of the XML graph to load.")]
+    public string Path { get; set; } = "";
+
+    public async ValueTask ExecuteAsync(IConsole console)
+    {
+        var graph = GraphXmlLoader.LoadPath(Path);
+        await graph.Execute();
     }
 }

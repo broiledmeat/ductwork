@@ -4,29 +4,28 @@ using ductwork;
 using ductwork.Components;
 
 #nullable enable
-namespace ductworkTests.Components
+namespace ductworkTests.Components;
+
+public class AdderComponent : Component
 {
-    public class AdderComponent : Component
+    public readonly InputPlug<IObjectArtifact> InX = new();
+    public readonly InputPlug<IObjectArtifact> InY = new();
+    public readonly OutputPlug<IntArtifact> Out = new();
+
+    public override async Task Execute(Graph graph, CancellationToken token)
     {
-        public readonly InputPlug<IObjectArtifact> InX = new();
-        public readonly InputPlug<IObjectArtifact> InY = new();
-        public readonly OutputPlug<IntArtifact> Out = new();
-
-        public override async Task Execute(Graph graph, CancellationToken token)
+        while (!graph.IsFinished(InX) && !graph.IsFinished(InY))
         {
-            while (!graph.IsFinished(InX) && !graph.IsFinished(InY))
-            {
-                var x = await graph.Get(InX, token);
-                var y = await graph.Get(InY, token);
+            var x = await graph.Get(InX, token);
+            var y = await graph.Get(InY, token);
 
-                if (x is not IntArtifact xInt || y is not IntArtifact yInt)
-                {
-                    continue;
-                }
-            
-                var artifact = new IntArtifact(xInt.Value + yInt.Value);
-                await graph.Push(Out, artifact);
+            if (x is not IntArtifact xInt || y is not IntArtifact yInt)
+            {
+                continue;
             }
+            
+            var artifact = new IntArtifact(xInt.Value + yInt.Value);
+            await graph.Push(Out, artifact);
         }
     }
 }
