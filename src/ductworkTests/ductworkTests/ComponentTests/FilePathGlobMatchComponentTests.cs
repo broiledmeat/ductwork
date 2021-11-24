@@ -40,7 +40,7 @@ public class FilePathGlobMatchComponentTests
             "parent/sub/childB.tart",
         };
         
-        var component = new FilePathGlobMatchComponent("parent/**.t?t");
+        var component = new FilePathGlobMatchComponent("parent/**/*.t?t");
         var harness = new ComponentHarness(component);
 
         PushPaths(harness, component, paths);

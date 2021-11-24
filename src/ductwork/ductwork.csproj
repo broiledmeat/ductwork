@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="Crc32.NET" Version="1.2.0" />
+      <PackageReference Include="Glob" Version="1.2.0-alpha0037" />
       <PackageReference Include="NLog" Version="5.0.0-preview.3" />
     </ItemGroup>
 
