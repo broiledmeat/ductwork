@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Schema;
+using ductwork.Artifacts;
 using ductwork.Components;
 using NLog;
 using NLog.Targets;
@@ -15,7 +16,7 @@ namespace ductwork.FileLoaders;
 public static class GraphXmlLoader
 {
     private const string ArrayValueTypeName = "array";
-        
+
     private record ValueConverter(Type Type, Func<XmlNode, object> Convert);
 
     private static readonly Dictionary<string, ValueConverter> ValueConverters = new()
@@ -61,9 +62,14 @@ public static class GraphXmlLoader
                 type => type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name,
                 type => type);
 
+        var artifactTypes = assemblies
+            .SelectMany(assembly => assembly.GetExportedTypes())
+            .Where(type => type.IsAssignableTo(typeof(IArtifact)))
+            .ToDictionary(type => type.Name, type => type);
+
         var components = document
             .SelectXPath("/graph/component")
-            .Select(node => ProcessComponentNode(node, componentTypes))
+            .Select(node => ProcessComponentNode(node, componentTypes, artifactTypes))
             .ToDictionary(pair => pair.Item1, pair => pair.Item2);
 
         components.Values
@@ -105,7 +111,8 @@ public static class GraphXmlLoader
 
     private static (string, Component) ProcessComponentNode(
         XmlNode node,
-        IReadOnlyDictionary<string, Type> componentTypes)
+        IReadOnlyDictionary<string, Type> componentTypes,
+        IReadOnlyDictionary<string, Type> artifactTypes)
     {
         var key = RequireAttribute(node, "key");
         var fullTypeName = RequireAttribute(node, "type");
@@ -126,8 +133,8 @@ public static class GraphXmlLoader
 
         if (componentType.IsGenericType)
         {
-            var converter = GetValueConverter(subTypeName);
-            componentType = componentType.MakeGenericType(converter.Type);
+            var subType = artifactTypes.GetValueOrDefault(subTypeName ?? "") ?? GetValueConverter(subTypeName).Type;
+            componentType = componentType.MakeGenericType(subType);
         }
 
         var componentConstructor = componentType.GetConstructor(componentArgTypes);
@@ -152,7 +159,7 @@ public static class GraphXmlLoader
 
         var (outComponentName, outPlugName) = SplitConnectionNames(outName);
         var (inComponentName, inPlugName) = SplitConnectionNames(inName);
-            
+
         var outComponent = components.GetValueOrDefault(outComponentName);
         var inComponent = components.GetValueOrDefault(inComponentName);
 
@@ -160,7 +167,7 @@ public static class GraphXmlLoader
         {
             throw new InvalidOperationException($"No component with key \"{outComponentName}\".");
         }
-            
+
         if (inComponent == null)
         {
             throw new InvalidOperationException($"No component with key \"{inComponentName}\".");
@@ -171,12 +178,14 @@ public static class GraphXmlLoader
 
         if (outputField == null)
         {
-            throw new InvalidOperationException($"Output component \"{outComponentName}\" does not have a field \"{outPlugName}\".");
+            throw new InvalidOperationException(
+                $"Output component \"{outComponentName}\" does not have a field \"{outPlugName}\".");
         }
-            
+
         if (inputField == null)
         {
-            throw new InvalidOperationException($"Input component \"{inComponentName}\" does not have a field \"{outPlugName}\".");
+            throw new InvalidOperationException(
+                $"Input component \"{inComponentName}\" does not have a field \"{outPlugName}\".");
         }
 
         var output = (IOutputPlug) outputField.GetValue(outComponent)!;
