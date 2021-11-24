@@ -143,7 +143,15 @@ public class Graph
     private async Task ExecuteComponent(Component component, CancellationToken token)
     {
         Log.Debug($"Started executing component {component.DisplayName}");
-        await component.Execute(this, token);
+
+        try
+        {
+            await component.Execute(this, token);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, $"Exception executing {component.DisplayName}");
+        }
 
         lock (_lock)
         {
