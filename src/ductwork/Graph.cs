@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Resources;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -16,6 +17,8 @@ namespace ductwork;
 public class Graph
 {
     protected readonly object _lock = new();
+
+    protected readonly HashSet<IResource> Resources = new();
 
     protected readonly HashSet<Component> _components = new();
 
@@ -276,4 +279,25 @@ public class Graph
 
     public bool IsFinished<T>(InputPlug<T> input) where T : IArtifact =>
         Count(input) == 0 && _inputsCompleted.Contains(input);
+
+    public T GetResource<T>() where T : IResource
+    {
+        lock (_lock)
+        {
+            var resource = Resources.FirstOrDefault(resource => resource.GetType() == typeof(T));
+
+            if (resource != null)
+            {
+                return (T) resource;
+            }
+
+            var constructor = typeof(T).GetConstructor(Array.Empty<Type>())
+                              ?? throw new Exception(
+                                  $"Resource type `${typeof(T).Name}` does not have an empty constructor");
+            resource = (T) constructor.Invoke(Array.Empty<object>());
+            Resources.Add(resource);
+
+            return (T) resource;
+        }
+    }
 }
