@@ -33,7 +33,7 @@ public class Graph
     protected readonly HashSet<IOutputPlug> _outputsCompleted = new();
     protected readonly HashSet<IInputPlug> _inputsCompleted = new();
 
-    public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message}";
+    public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message} ${exception}";
     public readonly Logger Log;
 
     public string DisplayName { get; set; } = Guid.NewGuid().ToString();
