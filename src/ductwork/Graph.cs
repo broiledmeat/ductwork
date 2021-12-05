@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
@@ -11,6 +12,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 
+[assembly: InternalsVisibleTo("ductworkTests")]
 #nullable enable
 namespace ductwork;
 
@@ -204,27 +206,27 @@ public class Graph
         }
     }
 
-    public IEnumerable<IInputPlug> GetConnections(IOutputPlug output)
+    internal IEnumerable<IInputPlug> GetConnections(IOutputPlug output)
     {
         return _connections.GetValueOrDefault(output) ?? Enumerable.Empty<IInputPlug>();
     }
 
-    public FieldInfo? GetPlugField(IOutputPlug output)
+    internal FieldInfo? GetPlugField(IOutputPlug output)
     {
         return _plugFieldInfos.GetValueOrDefault(output);
     }
 
-    public FieldInfo? GetPlugField(IInputPlug input)
+    internal FieldInfo? GetPlugField(IInputPlug input)
     {
         return _plugFieldInfos.GetValueOrDefault(input);
     }
 
-    public IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
+    internal IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
     {
         return _componentOutputs.GetValueOrDefault(component) ?? Enumerable.Empty<IOutputPlug>();
     }
 
-    public IEnumerable<IInputPlug> GetInputPlugs(Component component)
+    internal IEnumerable<IInputPlug> GetInputPlugs(Component component)
     {
         return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<IInputPlug>();
     }
