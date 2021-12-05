@@ -95,7 +95,7 @@ public class GraphTests
     public void ThrowsOnConnectionWithMismatchedTypes()
     {
         var graph = new Graph {DisplayName = nameof(ThrowsOnConnectionWithMismatchedTypes)};
-        var dirIter = new DirectoryFilePathIteratorComponent("") {DisplayName = "DirIter"};
+        var dirIter = new DirectoryFilePathIteratorComponent(".") {DisplayName = "DirIter"};
         var receiver = new ReceiverComponent {DisplayName = "Receiver"};
             
         graph.Add(dirIter, receiver);
