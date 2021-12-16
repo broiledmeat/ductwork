@@ -52,6 +52,7 @@ public static class GraphXmlLoader
         var assemblies = document
             .SelectXPath("/graph/lib")
             .Select(ProcessLibNode)
+            .Select(Assembly.LoadFrom)
             .Concat(new[] {Assembly.GetExecutingAssembly()})
             .ToArray();
 
@@ -103,10 +104,9 @@ public static class GraphXmlLoader
         }
     }
 
-    private static Assembly ProcessLibNode(XmlNode node)
+    private static string ProcessLibNode(XmlNode node)
     {
-        var fullPath = Path.GetFullPath(RequireAttribute(node, "path"));
-        return Assembly.LoadFrom(fullPath);
+        return Path.GetFullPath(RequireAttribute(node, "path"));
     }
 
     private static (string, Component) ProcessComponentNode(
