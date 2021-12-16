@@ -27,20 +27,25 @@ public class FinalizedResult : IArtifact
     }
 }
 
-public class FinalizeArtifactsComponent : SingleInComponent<IFinalizingArtifact>
+public class FinalizeArtifactsComponent : SingleInComponent
 {
-    public readonly OutputPlug<FinalizedResult> Out = new();
+    public readonly OutputPlug Out = new();
 
-    protected override async Task ExecuteIn(Graph graph, IFinalizingArtifact value, CancellationToken token)
+    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
     {
+        if (artifact is not IFinalizingArtifact finalizingArtifact)
+        {
+            return;
+        }
+        
         var state = FinalizedResult.FinalizedState.SucceededSkipped;
         Exception? exception = null;
 
-        if (value.RequiresFinalize())
+        if (finalizingArtifact.RequiresFinalize())
         {
             try
             {
-                state = await value.Finalize(token)
+                state = await finalizingArtifact.Finalize(token)
                     ? FinalizedResult.FinalizedState.Succeeded
                     : FinalizedResult.FinalizedState.Failed;
             }
@@ -53,22 +58,22 @@ public class FinalizeArtifactsComponent : SingleInComponent<IFinalizingArtifact>
 
         if (state == FinalizedResult.FinalizedState.Succeeded)
         {
-            graph.Log.Info($"Finalized {DisplayName} {value}");
+            graph.Log.Info($"Finalized {DisplayName} {finalizingArtifact}");
         }
         else if (state == FinalizedResult.FinalizedState.SucceededSkipped)
         {
-            graph.Log.Info($"Skipped finalizing {DisplayName} {value}");
+            graph.Log.Info($"Skipped finalizing {DisplayName} {finalizingArtifact}");
         }
         else if (exception != null)
         {
-            graph.Log.Error(exception, $"Failed finalizing {DisplayName} {value}");
+            graph.Log.Error(exception, $"Failed finalizing {DisplayName} {finalizingArtifact}");
         }
         else
         {
-            graph.Log.Warn($"Failed finalizing {DisplayName} {value}");
+            graph.Log.Warn($"Failed finalizing {DisplayName} {finalizingArtifact}");
         }
 
-        var artifact = new FinalizedResult(value, state, exception);
-        await graph.Push(Out, artifact);
+        var resultArtifact = new FinalizedResult(finalizingArtifact, state, exception);
+        await graph.Push(Out, resultArtifact);
     }
 }

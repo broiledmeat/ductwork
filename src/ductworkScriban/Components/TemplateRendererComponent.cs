@@ -10,7 +10,7 @@ using Scriban.Runtime;
 
 namespace ductworkScriban.Components;
 
-public class TemplateRendererComponent : SingleInSingleOutComponent<IFilePathArtifact, WriteFileArtifact>
+public class TemplateRendererComponent : SingleInSingleOutComponent
 {
     public readonly string SourceRoot;
     public readonly string TargetRoot;
@@ -24,12 +24,17 @@ public class TemplateRendererComponent : SingleInSingleOutComponent<IFilePathArt
         TargetRoot = targetRoot;
     }
 
-    protected override async Task ExecuteIn(Graph graph, IFilePathArtifact value, CancellationToken token)
+    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
     {
+        if (artifact is not IFilePathArtifact filePathArtifact)
+        {
+            return;
+        }
+        
         _resource ??= graph.GetResource<ArtifactNamedValuesResource>();
         _templateLoader ??= new TemplateLoader(SourceRoot);
 
-        var contextVars = _resource.Get(value);
+        var contextVars = _resource.Get(filePathArtifact);
         var disableRender = contextVars.Any(contextVar => 
             contextVar.Name == "rendererEnable" && contextVar.Value is false);
 
@@ -38,10 +43,10 @@ public class TemplateRendererComponent : SingleInSingleOutComponent<IFilePathArt
             return;
         }
 
-        var targetPath = Path.Combine(TargetRoot, Path.GetRelativePath(SourceRoot, value.FilePath));
+        var targetPath = Path.Combine(TargetRoot, Path.GetRelativePath(SourceRoot, filePathArtifact.FilePath));
         var script = new BuiltinFunctions();
 
-        _resource.Get(value).ForEach(contextVar => script.Add(contextVar.Name, contextVar.Value));
+        _resource.Get(filePathArtifact).ForEach(contextVar => script.Add(contextVar.Name, contextVar.Value));
         script.Import("set_context", SetContextFunc);
         script.Import("get_contexts", (string n, object v) => GetContextsFunc(_resource, n, v));
 
@@ -49,14 +54,14 @@ public class TemplateRendererComponent : SingleInSingleOutComponent<IFilePathArt
 
         try
         {
-            var template = Template.Parse(await File.ReadAllTextAsync(value.FilePath, token));
+            var template = Template.Parse(await File.ReadAllTextAsync(filePathArtifact.FilePath, token));
             var content = await template.RenderAsync(context) ?? string.Empty;
-            var artifact = new WriteFileArtifact(Encoding.UTF8.GetBytes(content), targetPath);
-            await graph.Push(Out, artifact);
+            var writeFileArtifact = new WriteFileArtifact(Encoding.UTF8.GetBytes(content), targetPath);
+            await graph.Push(Out, writeFileArtifact);
         }
         catch (Exception e)
         {
-            graph.Log.Error(e, $"Exception rendering {value.FilePath}: {e.Message}");
+            graph.Log.Error(e, $"Exception rendering {filePathArtifact.FilePath}: {e.Message}");
         }
     }
 

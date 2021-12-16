@@ -6,7 +6,7 @@ using ductwork.Artifacts;
 #nullable enable
 namespace ductwork.Components;
 
-public class CopyFilePathToTargetPathComponent : SingleInSingleOutComponent<IFilePathArtifact, CopyFileArtifact>
+public class CopyFilePathToTargetPathComponent : SingleInSingleOutComponent
 {
     public readonly string SourceRoot;
     public readonly string TargetRoot;
@@ -17,10 +17,15 @@ public class CopyFilePathToTargetPathComponent : SingleInSingleOutComponent<IFil
         TargetRoot = targetRoot;
     }
 
-    protected override async Task ExecuteIn(Graph graph, IFilePathArtifact value, CancellationToken token)
+    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
     {
-        var targetPath = Path.Combine(TargetRoot, Path.GetRelativePath(SourceRoot, value.FilePath));
-        var artifact = new CopyFileArtifact(value.FilePath, targetPath);
-        await graph.Push(Out, artifact);
+        if (artifact is not IFilePathArtifact filePathArtifact)
+        {
+            return;
+        }
+        
+        var targetPath = Path.Combine(TargetRoot, Path.GetRelativePath(SourceRoot, filePathArtifact.FilePath));
+        var copyFileArtifact = new CopyFileArtifact(filePathArtifact.FilePath, targetPath);
+        await graph.Push(Out, copyFileArtifact);
     }
 }

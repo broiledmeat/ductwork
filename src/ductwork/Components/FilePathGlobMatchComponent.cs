@@ -8,10 +8,10 @@ using GlobExpressions;
 #nullable enable
 namespace ductwork.Components;
 
-public class FilePathGlobMatchComponent : SingleInComponent<IFilePathArtifact>
+public class FilePathGlobMatchComponent : SingleInComponent
 {
-    public readonly OutputPlug<FilePathArtifact> True = new();
-    public readonly OutputPlug<FilePathArtifact> False = new();
+    public readonly OutputPlug True = new();
+    public readonly OutputPlug False = new();
         
     public readonly Glob Glob;
 
@@ -20,10 +20,15 @@ public class FilePathGlobMatchComponent : SingleInComponent<IFilePathArtifact>
         Glob = new Glob(glob);
     }
 
-    protected override async Task ExecuteIn(Graph graph, IFilePathArtifact value, CancellationToken token)
+    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
     {
-        var output = Glob.IsMatch(value.FilePath) ? True : False;
-        var artifact = new FilePathArtifact(value.FilePath);
-        await graph.Push(output, artifact);
+        if (artifact is not IFilePathArtifact filePathArtifact)
+        {
+            return;
+        }
+        
+        var output = Glob.IsMatch(filePathArtifact.FilePath) ? True : False;
+        var matchingArtifact = new FilePathArtifact(filePathArtifact.FilePath);
+        await graph.Push(output, matchingArtifact);
     }
 }

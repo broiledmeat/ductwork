@@ -6,7 +6,7 @@ using ductwork.Artifacts;
 #nullable enable
 namespace ductwork.Components;
 
-public class DirectoryFilePathIteratorComponent : SingleOutComponent<FilePathArtifact>
+public class DirectoryFilePathIteratorComponent : SingleOutComponent
 {
     public readonly string Path;
     public readonly bool IsRecursive;

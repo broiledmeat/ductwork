@@ -13,8 +13,8 @@ public class ComponentHarness
 {
     private readonly HarnessGraph _graph;
     private readonly Component _component;
-    private readonly Dictionary<IInputPlug, List<IArtifact>> _queuedPushes;
-    private readonly Dictionary<IOutputPlug, ValueReceiverComponent> _outputReceivers;
+    private readonly Dictionary<InputPlug, List<IArtifact>> _queuedPushes;
+    private readonly Dictionary<OutputPlug, ValueReceiverComponent> _outputReceivers;
 
     public ComponentHarness(Component component)
     {
@@ -38,12 +38,12 @@ public class ComponentHarness
                 });
     }
 
-    public void QueuePush<T>(InputPlug<T> input, T value) where T : IArtifact
+    public void QueuePush(InputPlug input, IArtifact value)
     {
         _queuedPushes[input].Add(value);
     }
 
-    public ReadOnlyDictionary<IOutputPlug, IArtifact[]> Execute()
+    public ReadOnlyDictionary<OutputPlug, IArtifact[]> Execute()
     {
         _outputReceivers.Values.ForEach(receiver => receiver.Clear());
 
@@ -57,20 +57,20 @@ public class ComponentHarness
 
         foreach (var input in _graph.GetInputPlugs(_component))
         {
-            _graph.IsFinished(input);
+            _graph.SetIsFinished(input);
         }
         
         _graph.Execute().Wait();
 
-        return new ReadOnlyDictionary<IOutputPlug, IArtifact[]>(_outputReceivers
+        return new ReadOnlyDictionary<OutputPlug, IArtifact[]>(_outputReceivers
             .ToDictionary(pair => pair.Key, pair => pair.Value.Values.ToArray()));
     }
 
     private class HarnessGraph : Graph
     {
-        public async Task Push(IInputPlug input, IArtifact value)
+        public async Task Push(InputPlug input, IArtifact value)
         {
-            var queue = _inputQueues.GetValueOrDefault(input);
+            var queue = GetInputQueues().GetValueOrDefault(input);
             
             if (queue == null)
             {
@@ -80,13 +80,13 @@ public class ComponentHarness
             await queue.Enqueue(value);
         }
 
-        public void IsFinished(IInputPlug input)
+        public void SetIsFinished(InputPlug input)
         {
-            _inputsCompleted.Add(input);
+            GetInputsCompleted().Add(input);
         }
     }
 
-    private class ValueReceiverComponent : SingleInComponent<IArtifact>
+    private class ValueReceiverComponent : SingleInComponent
     {
         private readonly object _lock = new();
         private readonly List<IArtifact> _values = new();
@@ -98,11 +98,11 @@ public class ComponentHarness
             Values = new ReadOnlyCollection<IArtifact>(_values);
         }
         
-        protected override Task ExecuteIn(Graph graph, IArtifact value, CancellationToken token)
+        protected override Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
         {
             lock (_lock)
             {
-                _values.Add(value);
+                _values.Add(artifact);
             }
             
             return Task.CompletedTask;

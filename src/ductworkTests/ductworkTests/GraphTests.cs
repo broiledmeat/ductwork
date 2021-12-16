@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using ductwork;
-using ductwork.Components;
 using ductworkTests.Components;
 using NUnit.Framework;
 
@@ -88,18 +87,6 @@ public class GraphTests
         var dirIter = new SenderComponent(Array.Empty<object>()) {DisplayName = "Sender"};
         var receiver = new ReceiverComponent {DisplayName = "Receiver"};
 
-        Assert.Throws<InvalidOperationException>(() => graph.Connect(dirIter.Out, receiver.In));
-    }
-
-    [Test]
-    public void ThrowsOnConnectionWithMismatchedTypes()
-    {
-        var graph = new Graph {DisplayName = nameof(ThrowsOnConnectionWithMismatchedTypes)};
-        var dirIter = new DirectoryFilePathIteratorComponent(".") {DisplayName = "DirIter"};
-        var receiver = new ReceiverComponent {DisplayName = "Receiver"};
-            
-        graph.Add(dirIter, receiver);
-            
         Assert.Throws<InvalidOperationException>(() => graph.Connect(dirIter.Out, receiver.In));
     }
 }

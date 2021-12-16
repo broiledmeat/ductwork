@@ -8,9 +8,9 @@ namespace ductworkTests.Components;
 
 public class AdderComponent : Component
 {
-    public readonly InputPlug<IObjectArtifact> InX = new();
-    public readonly InputPlug<IObjectArtifact> InY = new();
-    public readonly OutputPlug<IntArtifact> Out = new();
+    public readonly InputPlug InX = new();
+    public readonly InputPlug InY = new();
+    public readonly OutputPlug Out = new();
 
     public override async Task Execute(Graph graph, CancellationToken token)
     {

@@ -71,8 +71,8 @@ public class Graph
 
             Log.Debug($"Added component {component.DisplayName}<{component.GetType().Name}>");
 
-            var outputs = GetFieldsOfType<IOutputPlug>(component);
-            var inputs = GetFieldsOfType<IInputPlug>(component);
+            var outputs = GetFieldsOfType<OutputPlug>(component);
+            var inputs = GetFieldsOfType<InputPlug>(component);
 
             foreach (var (field, plug) in outputs)
             {
@@ -94,7 +94,7 @@ public class Graph
         }
     }
 
-    public void Connect(IOutputPlug output, IInputPlug input)
+    public void Connect(OutputPlug output, InputPlug input)
     {
         var outputComponent = _componentOutputs
             .Where(pair => pair.Value.Contains(output))
@@ -115,15 +115,9 @@ public class Graph
             throw new InvalidOperationException("Input plugs' component has not been added to the graph.");
         }
 
-        if (!output.Type.IsAssignableTo(input.Type))
-        {
-            throw new InvalidOperationException(
-                $"Output type of {output.Type} does not match Input type of {input.Type}");
-        }
-
         if (!_connections.ContainsKey(output))
         {
-            _connections.Add(output, new HashSet<IInputPlug>());
+            _connections.Add(output, new HashSet<InputPlug>());
         }
 
         _connections[output].Add(input);
@@ -231,7 +225,7 @@ public class Graph
         return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<IInputPlug>();
     }
 
-    public async Task Push<T>(OutputPlug<T> output, T value) where T : IArtifact
+    public async Task Push(OutputPlug output, IArtifact value)
     {
         var component = _componentOutputs
             .Where(pair => pair.Value.Contains(output))
@@ -250,10 +244,10 @@ public class Graph
         await Task.WhenAll(tasks);
 
         var outputFieldName = _plugFieldInfos.GetValueOrDefault(output)?.Name ?? "Out";
-        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {value?.ToString()}");
+        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {value.ToString()}");
     }
 
-    public async Task<T> Get<T>(InputPlug<T> input, CancellationToken token = default) where T : IArtifact
+    public async Task<IArtifact> Get(InputPlug input, CancellationToken token = default)
     {
         if (!_inputQueues.ContainsKey(input))
         {
@@ -272,21 +266,19 @@ public class Graph
                 continue;
             }
 
-            return (T) (await queue.Dequeue(token))!;
+            return (IArtifact) (await queue.Dequeue(token))!;
         }
     }
 
-    public int Count<T>(InputPlug<T> input) where T : IArtifact =>
-        _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
+    public int Count(InputPlug input)  => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
 
-    public bool IsFinished<T>(InputPlug<T> input) where T : IArtifact =>
-        Count(input) == 0 && _inputsCompleted.Contains(input);
+    public bool IsFinished(InputPlug input) => Count(input) == 0 && _inputsCompleted.Contains(input);
 
     public T GetResource<T>() where T : IResource
     {
         lock (_lock)
         {
-            var resource = Resources.FirstOrDefault(resource => resource.GetType() == typeof(T));
+            var resource = _resources.FirstOrDefault(resource => resource.GetType() == typeof(T));
 
             if (resource != null)
             {

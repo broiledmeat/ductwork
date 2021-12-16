@@ -6,11 +6,11 @@ using ductwork.Artifacts;
 
 namespace ductwork.Components;
 
-public class InputAwaiterComponent<T> : SingleInSingleOutComponent<T, T> where T : IArtifact
+public class InputAwaiterComponent : SingleInSingleOutComponent
 {
-    private readonly ConcurrentBag<T> _artifacts = new();
+    private readonly ConcurrentBag<IArtifact> _artifacts = new();
 
-    protected override Task ExecuteIn(Graph graph, T value, CancellationToken token)
+    protected override Task ExecuteIn(Graph graph, IArtifact value, CancellationToken token)
     {
         _artifacts.Add(value);
         return Task.CompletedTask;

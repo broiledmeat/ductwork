@@ -3,12 +3,13 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
+using ductwork.Artifacts;
 using ductwork.Components;
 
 #nullable enable
 namespace ductworkTests.Components;
 
-public class ReceiverComponent : SingleInComponent<IObjectArtifact>
+public class ReceiverComponent : SingleInComponent
 {
     private readonly object _lock = new();
     private readonly List<object> _values = new();
@@ -20,11 +21,16 @@ public class ReceiverComponent : SingleInComponent<IObjectArtifact>
 
     public readonly ReadOnlyCollection<object> Values;
         
-    protected override Task ExecuteIn(Graph graph, IObjectArtifact value, CancellationToken token)
+    protected override Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
     {
+        if (artifact is not IObjectArtifact objectArtifact)
+        {
+            return Task.CompletedTask;
+        }
+        
         lock (_lock)
         {
-            _values.Add(value.Object);
+            _values.Add(objectArtifact.Object);
         }
             
         return Task.CompletedTask;

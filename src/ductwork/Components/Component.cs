@@ -21,11 +21,11 @@ public abstract class Component
     }
 }
 
-public abstract class SingleInComponent<TI> : Component where TI : IArtifact
+public abstract class SingleInComponent : Component
 {
     private const int InputWaitMs = 50;
 
-    public readonly InputPlug<TI> In = new();
+    public readonly InputPlug In = new();
 
     public override async Task Execute(Graph graph, CancellationToken token)
     {
@@ -49,7 +49,7 @@ public abstract class SingleInComponent<TI> : Component where TI : IArtifact
         await ExecuteComplete(graph, token);
     }
 
-    protected abstract Task ExecuteIn(Graph graph, TI value, CancellationToken token);
+    protected abstract Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token);
 
     protected virtual Task ExecuteComplete(Graph graph, CancellationToken token)
     {
@@ -57,14 +57,12 @@ public abstract class SingleInComponent<TI> : Component where TI : IArtifact
     }
 }
 
-public abstract class SingleInSingleOutComponent<TI, TO> : SingleInComponent<TI>
-    where TI : IArtifact
-    where TO : IArtifact
+public abstract class SingleInSingleOutComponent : SingleInComponent
 {
-    public readonly OutputPlug<TO> Out = new();
+    public readonly OutputPlug Out = new();
 }
 
-public abstract class SingleOutComponent<TO> : Component where TO : IArtifact
+public abstract class SingleOutComponent : Component
 {
-    public readonly OutputPlug<TO> Out = new();
+    public readonly OutputPlug Out = new();
 }

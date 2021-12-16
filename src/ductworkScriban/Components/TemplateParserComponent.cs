@@ -7,17 +7,22 @@ using Scriban.Syntax;
 
 namespace ductworkScriban.Components;
 
-public class TemplateParserComponent : SingleInSingleOutComponent<IFilePathArtifact, IFilePathArtifact>
+public class TemplateParserComponent : SingleInSingleOutComponent
 {
     private const string SetContextName = "set_context";
     
-    protected override async Task ExecuteIn(Graph graph, IFilePathArtifact value, CancellationToken token)
+    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
     {
+        if (artifact is not IFilePathArtifact filePathArtifact)
+        {
+            return;
+        }
+        
         var resource = graph.GetResource<ArtifactNamedValuesResource>();
 
         try
         {
-            var template = Template.Parse(await File.ReadAllTextAsync(value.FilePath, token));
+            var template = Template.Parse(await File.ReadAllTextAsync(filePathArtifact.FilePath, token));
 
             var setContextExpressionArgs = template.Page.Body.Statements
                 .OfType<ScriptExpressionStatement>()
@@ -43,14 +48,14 @@ public class TemplateParserComponent : SingleInSingleOutComponent<IFilePathArtif
                     throw new Exception($"`{SetContextName}` first argument must be a string.");
                 }
 
-                resource.Set(value, nameArg, args[1]);
+                resource.Set(filePathArtifact, nameArg, args[1]);
             }
 
-            await graph.Push(Out, value);
+            await graph.Push(Out, filePathArtifact);
         }
         catch (Exception e)
         {
-            graph.Log.Error(e, $"Exception parsing {value.FilePath}: {e.Message}");
+            graph.Log.Error(e, $"Exception parsing {filePathArtifact.FilePath}: {e.Message}");
         }
     }
 }

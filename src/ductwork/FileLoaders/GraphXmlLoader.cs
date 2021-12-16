@@ -150,7 +150,7 @@ public static class GraphXmlLoader
         return (key, component);
     }
 
-    private static (IOutputPlug, IInputPlug) ProcessConnectionNode(
+    private static (OutputPlug, InputPlug) ProcessConnectionNode(
         XmlNode node,
         IReadOnlyDictionary<string, Component> components)
     {
@@ -160,36 +160,18 @@ public static class GraphXmlLoader
         var (outComponentName, outPlugName) = SplitConnectionNames(outName);
         var (inComponentName, inPlugName) = SplitConnectionNames(inName);
 
-        var outComponent = components.GetValueOrDefault(outComponentName);
-        var inComponent = components.GetValueOrDefault(inComponentName);
+        var outComponent = components.GetValueOrDefault(outComponentName)
+            ?? throw new InvalidOperationException($"No component with key \"{outComponentName}\".");
+        var inComponent = components.GetValueOrDefault(inComponentName)
+            ?? throw new InvalidOperationException($"No component with key \"{inComponentName}\".");
 
-        if (outComponent == null)
-        {
-            throw new InvalidOperationException($"No component with key \"{outComponentName}\".");
-        }
+        var outField = outComponent.GetType().GetField(outPlugName)
+            ?? throw new InvalidOperationException($"Component \"{outComponentName}\" does not have plug \"{outPlugName}\".");
+        var inField = inComponent.GetType().GetField(inPlugName)
+            ?? throw new InvalidOperationException($"Component \"{inComponentName}\" does not have plug \"{inPlugName}\".");
 
-        if (inComponent == null)
-        {
-            throw new InvalidOperationException($"No component with key \"{inComponentName}\".");
-        }
-
-        var outputField = outComponent.GetType().GetField(outPlugName);
-        var inputField = inComponent.GetType().GetField(inPlugName);
-
-        if (outputField == null)
-        {
-            throw new InvalidOperationException(
-                $"Output component \"{outComponentName}\" does not have a field \"{outPlugName}\".");
-        }
-
-        if (inputField == null)
-        {
-            throw new InvalidOperationException(
-                $"Input component \"{inComponentName}\" does not have a field \"{outPlugName}\".");
-        }
-
-        var output = (IOutputPlug) outputField.GetValue(outComponent)!;
-        var input = (IInputPlug) inputField.GetValue(inComponent)!;
+        var output = (OutputPlug) outField.GetValue(outComponent)!;
+        var input = (InputPlug) inField.GetValue(inComponent)!;
 
         return (output, input);
     }
