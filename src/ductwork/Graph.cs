@@ -18,22 +18,22 @@ namespace ductwork;
 
 public class Graph
 {
-    protected readonly object _lock = new();
+    private readonly object _lock = new();
 
-    protected readonly HashSet<IResource> Resources = new();
+    private readonly HashSet<IResource> _resources = new();
 
-    protected readonly HashSet<Component> _components = new();
+    private readonly HashSet<Component> _components = new();
 
-    protected readonly Dictionary<Component, HashSet<IOutputPlug>> _componentOutputs = new();
-    protected readonly Dictionary<Component, HashSet<IInputPlug>> _componentInputs = new();
+    private readonly Dictionary<Component, HashSet<OutputPlug>> _componentOutputs = new();
+    private readonly Dictionary<Component, HashSet<InputPlug>> _componentInputs = new();
 
-    protected readonly Dictionary<object, FieldInfo> _plugFieldInfos = new();
+    private readonly Dictionary<object, FieldInfo> _plugFieldInfos = new();
 
-    protected readonly Dictionary<IOutputPlug, HashSet<IInputPlug>> _connections = new();
-    protected readonly Dictionary<IInputPlug, AsyncQueue<object?>> _inputQueues = new();
+    private readonly Dictionary<OutputPlug, HashSet<InputPlug>> _connections = new();
+    private readonly Dictionary<InputPlug, AsyncQueue<object?>> _inputQueues = new();
 
-    protected readonly HashSet<IOutputPlug> _outputsCompleted = new();
-    protected readonly HashSet<IInputPlug> _inputsCompleted = new();
+    private readonly HashSet<OutputPlug> _outputsCompleted = new();
+    private readonly HashSet<InputPlug> _inputsCompleted = new();
 
     public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message} ${exception}";
     public readonly Logger Log;
@@ -184,47 +184,6 @@ public class Graph
         Log.Debug($"Finished executing component {component.DisplayName}");
     }
 
-    public IEnumerable<Component> GetComponents()
-    {
-        return _components;
-    }
-
-    public IEnumerable<(IOutputPlug, IInputPlug)> GetConnections()
-    {
-        foreach (var (output, inputs) in _connections)
-        {
-            foreach (var input in inputs)
-            {
-                yield return (output, input);
-            }
-        }
-    }
-
-    internal IEnumerable<IInputPlug> GetConnections(IOutputPlug output)
-    {
-        return _connections.GetValueOrDefault(output) ?? Enumerable.Empty<IInputPlug>();
-    }
-
-    internal FieldInfo? GetPlugField(IOutputPlug output)
-    {
-        return _plugFieldInfos.GetValueOrDefault(output);
-    }
-
-    internal FieldInfo? GetPlugField(IInputPlug input)
-    {
-        return _plugFieldInfos.GetValueOrDefault(input);
-    }
-
-    internal IEnumerable<IOutputPlug> GetOutputPlugs(Component component)
-    {
-        return _componentOutputs.GetValueOrDefault(component) ?? Enumerable.Empty<IOutputPlug>();
-    }
-
-    internal IEnumerable<IInputPlug> GetInputPlugs(Component component)
-    {
-        return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<IInputPlug>();
-    }
-
     public async Task Push(OutputPlug output, IArtifact value)
     {
         var component = _componentOutputs
@@ -289,9 +248,49 @@ public class Graph
                               ?? throw new Exception(
                                   $"Resource type `${typeof(T).Name}` does not have an empty constructor");
             resource = (T) constructor.Invoke(Array.Empty<object>());
-            Resources.Add(resource);
+            _resources.Add(resource);
 
             return (T) resource;
         }
     }
+
+    #region Testing internals
+
+    internal Dictionary<InputPlug, AsyncQueue<object?>> GetInputQueues()
+    {
+        return _inputQueues;
+    }
+
+    internal HashSet<InputPlug> GetInputsCompleted()
+    {
+        return _inputsCompleted;
+    }
+
+    internal IEnumerable<Component> GetComponents()
+    {
+        return _components;
+    }
+
+    internal IEnumerable<(OutputPlug, InputPlug)> GetConnections()
+    {
+        foreach (var (output, inputs) in _connections)
+        {
+            foreach (var input in inputs)
+            {
+                yield return (output, input);
+            }
+        }
+    }
+
+    internal IEnumerable<OutputPlug> GetOutputPlugs(Component component)
+    {
+        return _componentOutputs.GetValueOrDefault(component) ?? Enumerable.Empty<OutputPlug>();
+    }
+
+    internal IEnumerable<InputPlug> GetInputPlugs(Component component)
+    {
+        return _componentInputs.GetValueOrDefault(component) ?? Enumerable.Empty<InputPlug>();
+    }
+
+    #endregion
 }
