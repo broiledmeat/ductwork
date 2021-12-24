@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Schema;
 using ductwork.Artifacts;
-using ductwork.Components;
 using NLog;
 using NLog.Targets;
+using Component = ductwork.Components.Component;
 
 #nullable enable
 namespace ductwork.FileLoaders;
@@ -27,23 +28,23 @@ public static class GraphXmlLoader
         {"bool", new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
     };
 
-    public static Graph LoadPath(string xmlFilepath)
+    public static GraphBuilder LoadPath(string xmlFilepath)
     {
         var document = new XmlDocument();
         document.Load(Path.GetFullPath(xmlFilepath));
         return LoadInternal(document);
     }
 
-    public static Graph LoadString(string xml)
+    public static GraphBuilder LoadString(string xml)
     {
         var document = new XmlDocument();
         document.LoadXml(xml);
         return LoadInternal(document);
     }
 
-    private static Graph LoadInternal(XmlDocument document)
+    private static GraphBuilder LoadInternal(XmlDocument document)
     {
-        var graph = new Graph();
+        var graph = new GraphBuilder();
 
         document
             .SelectXPath("/graph/config")
@@ -52,7 +53,6 @@ public static class GraphXmlLoader
         var assemblies = document
             .SelectXPath("/graph/lib")
             .Select(ProcessLibNode)
-            .Select(Assembly.LoadFrom)
             .Concat(new[] {Assembly.GetExecutingAssembly()})
             .ToArray();
 
@@ -84,8 +84,16 @@ public static class GraphXmlLoader
         return graph;
     }
 
-    private static void ProcessConfigNode(XmlNode node, Graph graph)
+    private static void ProcessConfigNode(XmlNode node, GraphBuilder graph)
     {
+        var displayName = GetAttribute(node, "displayname");
+        
+        if (displayName != null)
+        {
+            graph.DisplayName = displayName;
+
+        }
+        
         foreach (var logNode in node.SelectXPath("logfile"))
         {
             var fullPath = Path.GetFullPath(RequireAttribute(logNode, "path"));
@@ -97,16 +105,17 @@ public static class GraphXmlLoader
                 new FileTarget
                 {
                     FileName = fullPath,
-                    Layout = Graph.DefaultLogFormat
+                    Layout = GraphBuilder.DefaultLogFormat
                 },
                 graph.Log.Name);
             LogManager.Configuration = config;
         }
     }
 
-    private static string ProcessLibNode(XmlNode node)
+    private static Assembly ProcessLibNode(XmlNode node)
     {
-        return Path.GetFullPath(RequireAttribute(node, "path"));
+        var path = Path.GetFullPath(RequireAttribute(node, "path"));
+        return Assembly.LoadFrom(path);
     }
 
     private static (string, Component) ProcessComponentNode(

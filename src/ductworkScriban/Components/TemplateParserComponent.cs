@@ -1,6 +1,6 @@
-using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Executors;
 using ductwork.Resources;
 using Scriban;
 using Scriban.Syntax;
@@ -11,7 +11,7 @@ public class TemplateParserComponent : SingleInSingleOutComponent
 {
     private const string SetContextName = "set_context";
     
-    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {

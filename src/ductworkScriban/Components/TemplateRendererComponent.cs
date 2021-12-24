@@ -2,6 +2,7 @@ using System.Text;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Executors;
 using ductwork.Resources;
 using Scriban;
 using Scriban.Functions;
@@ -24,7 +25,7 @@ public class TemplateRendererComponent : SingleInSingleOutComponent
         TargetRoot = targetRoot;
     }
 
-    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {

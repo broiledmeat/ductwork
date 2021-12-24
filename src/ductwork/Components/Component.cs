@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Executors;
 
 #nullable enable
 namespace ductwork.Components;
@@ -10,7 +11,7 @@ public abstract class Component
 {
     public string DisplayName { get; set; } = Guid.NewGuid().ToString();
 
-    public abstract Task Execute(Graph graph, CancellationToken token);
+    public abstract Task Execute(GraphExecutor graph, CancellationToken token);
 
     public override string ToString()
     {
@@ -27,9 +28,9 @@ public abstract class SingleInComponent : Component
 
     public readonly InputPlug In = new();
 
-    public override async Task Execute(Graph graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor graph, CancellationToken token)
     {
-        var runner = new TaskRunner();
+        var runner = graph.Runner;
 
         while (!graph.IsFinished(In))
         {
@@ -45,13 +46,13 @@ public abstract class SingleInComponent : Component
             await runner.RunAsync(() => ExecuteIn(graph, value, token), token);
         }
 
-        await runner.WaitAsync();
+        await runner.WaitAsync(token);
         await ExecuteComplete(graph, token);
     }
 
-    protected abstract Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token);
+    protected abstract Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token);
 
-    protected virtual Task ExecuteComplete(Graph graph, CancellationToken token)
+    protected virtual Task ExecuteComplete(GraphExecutor graph, CancellationToken token)
     {
         return Task.CompletedTask;
     }

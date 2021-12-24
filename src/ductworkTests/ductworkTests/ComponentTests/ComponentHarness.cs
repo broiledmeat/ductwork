@@ -1,119 +1,134 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Executors;
+using ductwork.TaskRunners;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 
 namespace ductworkTests.ComponentTests;
 
 public class ComponentHarness
 {
-    private readonly HarnessGraph _graph;
-    private readonly Component _component;
-    private readonly Dictionary<InputPlug, List<IArtifact>> _queuedPushes;
-    private readonly Dictionary<OutputPlug, ValueReceiverComponent> _outputReceivers;
+    private readonly HarnessExecutor _executor;
+    private readonly List<(InputPlug, IArtifact)> _queuedPushes = new();
 
     public ComponentHarness(Component component)
     {
-        _graph = new HarnessGraph {DisplayName = $"Harness<{component.DisplayName}"};
-        _component = component;
-        
-        _graph.Add(_component);
-        
-        _queuedPushes = _graph.GetInputPlugs(_component)
-            .ToDictionary(input => input, _ => new List<IArtifact>());
-        
-        _outputReceivers = _graph.GetOutputPlugs(_component)
-            .ToDictionary(
-                output => output,
-                output =>
-                {
-                    var receiver = new ValueReceiverComponent();
-                    _graph.Add(receiver);
-                    _graph.Connect(output, receiver.In);
-                    return receiver;
-                });
+        _executor = new HarnessExecutor($"Harness<{component.DisplayName}>", component);
     }
 
     public void QueuePush(InputPlug input, IArtifact value)
     {
-        _queuedPushes[input].Add(value);
+        _queuedPushes.Add((input, value));
     }
 
     public ReadOnlyDictionary<OutputPlug, IArtifact[]> Execute()
     {
-        _outputReceivers.Values.ForEach(receiver => receiver.Clear());
-
-        foreach (var (input, values) in _queuedPushes)
+        foreach (var (input, artifact) in _queuedPushes)
         {
-            foreach (var artifact in values)
-            {
-                _graph.Push(input, artifact).Wait();
-            }
+            _executor.Push(input, artifact).Wait();
         }
 
-        foreach (var input in _graph.GetInputPlugs(_component))
-        {
-            _graph.SetIsFinished(input);
-        }
-        
-        _graph.Execute().Wait();
+        _executor.Execute(CancellationToken.None).Wait();
 
-        return new ReadOnlyDictionary<OutputPlug, IArtifact[]>(_outputReceivers
-            .ToDictionary(pair => pair.Key, pair => pair.Value.Values.ToArray()));
+        return _executor.GetOutputArtifacts();
     }
 
-    private class HarnessGraph : Graph
+    private class HarnessExecutor : GraphExecutor
     {
-        public async Task Push(InputPlug input, IArtifact value)
+        private readonly Component _component;
+        private readonly ConcurrentDictionary<OutputPlug, ConcurrentBag<IArtifact>> _outputArtifacts = new();
+        private readonly ConcurrentDictionary<InputPlug, AsyncQueue<object?>> _inputQueues = new();
+        private TaskRunner? _runner;
+
+        static HarnessExecutor()
         {
-            var queue = GetInputQueues().GetValueOrDefault(input);
-            
-            if (queue == null)
+            var config = new LoggingConfiguration();
+            config.AddRule(
+                LogLevel.Trace,
+                LogLevel.Fatal,
+                new ColoredConsoleTarget {Layout = GraphBuilder.DefaultLogFormat});
+            LogManager.Configuration = config;
+        }
+
+        public HarnessExecutor(string displayName, Component component)
+            : base(
+                displayName,
+                LogManager.GetLogger(displayName),
+                Array.Empty<Component>(),
+                Array.Empty<(Component, OutputPlug)>(),
+                Array.Empty<(Component, InputPlug)>(),
+                Array.Empty<(object, FieldInfo)>(),
+                Array.Empty<(OutputPlug, InputPlug)>())
+        {
+            _component = component;
+        }
+
+        public ReadOnlyDictionary<OutputPlug, IArtifact[]> GetOutputArtifacts()
+        {
+            return new ReadOnlyDictionary<OutputPlug, IArtifact[]>(
+                _outputArtifacts.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
+        }
+
+        public override TaskRunner Runner => _runner ??= new ThreadedTaskRunner(1);
+
+        public override async Task Execute(CancellationToken token)
+        {
+            await _component.Execute(this, token);
+        }
+        
+        public override Task Push(OutputPlug output, IArtifact value)
+        {
+            if (!_outputArtifacts.ContainsKey(output))
             {
-                return;
+                _outputArtifacts[output] = new ConcurrentBag<IArtifact>();
             }
 
-            await queue.Enqueue(value);
-        }
+            _outputArtifacts[output].Add(value);
 
-        public void SetIsFinished(InputPlug input)
-        {
-            GetInputsCompleted().Add(input);
-        }
-    }
-
-    private class ValueReceiverComponent : SingleInComponent
-    {
-        private readonly object _lock = new();
-        private readonly List<IArtifact> _values = new();
-        
-        public readonly ReadOnlyCollection<IArtifact> Values;
-
-        public ValueReceiverComponent()
-        {
-            Values = new ReadOnlyCollection<IArtifact>(_values);
-        }
-        
-        protected override Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
-        {
-            lock (_lock)
-            {
-                _values.Add(artifact);
-            }
-            
             return Task.CompletedTask;
         }
 
-        public void Clear()
+        public async Task Push(InputPlug input, IArtifact value)
         {
-            lock (_lock)
+            if (!_inputQueues.ContainsKey(input))
             {
-                _values.Clear();
+                _inputQueues[input] = new AsyncQueue<object?>();
+            }
+
+            await _inputQueues[input].Enqueue(value);
+        }
+
+        public override async Task<IArtifact> Get(InputPlug input, CancellationToken token)
+        {
+            var queue = _inputQueues[input];
+
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                if (queue.Count == 0)
+                {
+                    await Task.Delay(50, token);
+                    continue;
+                }
+
+                return (IArtifact) (await queue.Dequeue(token))!;
             }
         }
+
+        public override int Count(InputPlug input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
+
+        public override bool IsFinished(InputPlug input) => Count(input) == 0;
     }
 }

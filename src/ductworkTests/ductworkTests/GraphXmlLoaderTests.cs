@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Xml.Schema;
+using ductwork.Executors;
 using ductwork.FileLoaders;
 using ductworkTests.Components;
 using NUnit.Framework;
@@ -11,11 +13,6 @@ namespace ductworkTests;
 
 public class GraphXmlLoaderTests
 {
-    [SetUp]
-    public void Setup()
-    {
-    }
-
     [Test]
     public void ValidXmlLoadsAndExecutesWithExpectedOutput_Receivers()
     {
@@ -37,7 +34,7 @@ public class GraphXmlLoaderTests
             }
             .SetEquals(components.Select(component => component.GetType()).ToHashSet()));
 
-        graph.Execute().Wait();
+        graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
 
         var receivers = components.OfType<ReceiverComponent>().ToArray();
         var receiverA = receivers.FirstOrDefault(receiver => receiver.Values.Count == 3);
@@ -72,7 +69,7 @@ public class GraphXmlLoaderTests
             }
             .SetEquals(components.Select(component => component.GetType()).ToHashSet()));
 
-        graph.Execute().Wait();
+        graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
 
         var receiver = components.OfType<ReceiverComponent>().FirstOrDefault();
 

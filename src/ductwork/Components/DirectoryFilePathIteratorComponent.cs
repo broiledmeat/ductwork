@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Executors;
 
 #nullable enable
 namespace ductwork.Components;
@@ -19,7 +20,7 @@ public class DirectoryFilePathIteratorComponent : SingleOutComponent
         IncludeHidden = includeHidden;
     }
 
-    public override async Task Execute(Graph graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor graph, CancellationToken token)
     {
         var options = IsRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 

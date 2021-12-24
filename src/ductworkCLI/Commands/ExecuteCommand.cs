@@ -1,22 +1,23 @@
-using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
-using ductwork.Components;
+using ductwork.Executors;
 using ductwork.FileLoaders;
 
 namespace ductworkCLI.Commands;
 
-[Command("build")]
-public class BuildCommand : ICommand
+[Command("execute")]
+public class ExecuteCommand : ICommand
 {
-    [CommandParameter(0, Description = "Path of the XML graph to load.")]
+    [CommandParameter(0, Description = "Path of the XML graph to execute.")]
     public string Path { get; set; } = "";
 
     public async ValueTask ExecuteAsync(IConsole console)
     {
         var graph = GraphXmlLoader.LoadPath(Path);
-        await graph.Execute();
+        var executor = graph.GetExecutor<ThreadedExecutor>();
+        await executor.Execute(CancellationToken.None);
     }
 }

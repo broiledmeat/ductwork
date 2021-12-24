@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Executors;
 
 #nullable enable
 namespace ductwork.Components;
@@ -17,7 +18,7 @@ public class CopyFilePathToTargetPathComponent : SingleInSingleOutComponent
         TargetRoot = targetRoot;
     }
 
-    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Executors;
 
 #nullable enable
 namespace ductworkTests.Components;
@@ -21,7 +22,7 @@ public class ReceiverComponent : SingleInComponent
 
     public readonly ReadOnlyCollection<object> Values;
         
-    protected override Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
+    protected override Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IObjectArtifact objectArtifact)
         {

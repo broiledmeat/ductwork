@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
 using ductwork.Components;
+using ductwork.Executors;
 
 #nullable enable
 namespace ductworkTests.Components;
@@ -12,7 +13,7 @@ public class AdderComponent : Component
     public readonly InputPlug InY = new();
     public readonly OutputPlug Out = new();
 
-    public override async Task Execute(Graph graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor graph, CancellationToken token)
     {
         while (!graph.IsFinished(InX) && !graph.IsFinished(InY))
         {

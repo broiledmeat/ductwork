@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Executors;
 using GlobExpressions;
 
 #nullable enable
@@ -20,7 +21,7 @@ public class FilePathGlobMatchComponent : SingleInComponent
         Glob = new Glob(glob);
     }
 
-    protected override async Task ExecuteIn(Graph graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {

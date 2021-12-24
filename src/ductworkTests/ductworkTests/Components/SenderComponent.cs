@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Executors;
 
 #nullable enable
 namespace ductworkTests.Components;
@@ -23,7 +24,7 @@ public class SenderComponent : Component
     {
     }
 
-    public override async Task Execute(Graph graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor graph, CancellationToken token)
     {
         foreach (var value in _values)
         {
