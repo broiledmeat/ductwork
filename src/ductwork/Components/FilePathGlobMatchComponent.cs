@@ -21,7 +21,7 @@ public class FilePathGlobMatchComponent : SingleInComponent
         Glob = new Glob(glob);
     }
 
-    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {
@@ -30,6 +30,6 @@ public class FilePathGlobMatchComponent : SingleInComponent
         
         var output = Glob.IsMatch(filePathArtifact.FilePath) ? True : False;
         var matchingArtifact = new FilePathArtifact(filePathArtifact.FilePath);
-        await graph.Push(output, matchingArtifact);
+        await executor.Push(output, matchingArtifact);
     }
 }

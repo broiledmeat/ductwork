@@ -11,7 +11,7 @@ public abstract class Component
 {
     public string DisplayName { get; set; } = Guid.NewGuid().ToString();
 
-    public abstract Task Execute(GraphExecutor graph, CancellationToken token);
+    public abstract Task Execute(GraphExecutor executor, CancellationToken token);
 
     public override string ToString()
     {
@@ -28,31 +28,31 @@ public abstract class SingleInComponent : Component
 
     public readonly InputPlug In = new();
 
-    public override async Task Execute(GraphExecutor graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor executor, CancellationToken token)
     {
-        var runner = graph.Runner;
+        var runner = executor.Runner;
 
-        while (!graph.IsFinished(In))
+        while (!executor.IsFinished(In))
         {
             token.ThrowIfCancellationRequested();
 
-            if (graph.Count(In) == 0)
+            if (executor.Count(In) == 0)
             {
                 await Task.Delay(InputWaitMs, token);
                 continue;
             }
 
-            var value = await graph.Get(In, token);
-            await runner.RunAsync(() => ExecuteIn(graph, value, token), token);
+            var value = await executor.Get(In, token);
+            await runner.RunAsync(() => ExecuteIn(executor, value, token), token);
         }
 
         await runner.WaitAsync(token);
-        await ExecuteComplete(graph, token);
+        await ExecuteComplete(executor, token);
     }
 
-    protected abstract Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token);
+    protected abstract Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token);
 
-    protected virtual Task ExecuteComplete(GraphExecutor graph, CancellationToken token)
+    protected virtual Task ExecuteComplete(GraphExecutor executor, CancellationToken token)
     {
         return Task.CompletedTask;
     }

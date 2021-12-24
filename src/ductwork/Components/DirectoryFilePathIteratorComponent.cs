@@ -20,7 +20,7 @@ public class DirectoryFilePathIteratorComponent : SingleOutComponent
         IncludeHidden = includeHidden;
     }
 
-    public override async Task Execute(GraphExecutor graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor executor, CancellationToken token)
     {
         var options = IsRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
@@ -34,7 +34,7 @@ public class DirectoryFilePathIteratorComponent : SingleOutComponent
             }
 
             var artifact = new FilePathArtifact(path);
-            await graph.Push(Out, artifact);
+            await executor.Push(Out, artifact);
         }
     }
 

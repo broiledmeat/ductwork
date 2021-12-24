@@ -25,14 +25,14 @@ public class TemplateRendererComponent : SingleInSingleOutComponent
         TargetRoot = targetRoot;
     }
 
-    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {
             return;
         }
         
-        _resource ??= graph.GetResource<ArtifactNamedValuesResource>();
+        _resource ??= executor.GetResource<ArtifactNamedValuesResource>();
         _templateLoader ??= new TemplateLoader(SourceRoot);
 
         var contextVars = _resource.Get(filePathArtifact);
@@ -58,11 +58,11 @@ public class TemplateRendererComponent : SingleInSingleOutComponent
             var template = Template.Parse(await File.ReadAllTextAsync(filePathArtifact.FilePath, token));
             var content = await template.RenderAsync(context) ?? string.Empty;
             var writeFileArtifact = new WriteFileArtifact(Encoding.UTF8.GetBytes(content), targetPath);
-            await graph.Push(Out, writeFileArtifact);
+            await executor.Push(Out, writeFileArtifact);
         }
         catch (Exception e)
         {
-            graph.Log.Error(e, $"Exception rendering {filePathArtifact.FilePath}: {e.Message}");
+            executor.Log.Error(e, $"Exception rendering {filePathArtifact.FilePath}: {e.Message}");
         }
     }
 

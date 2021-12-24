@@ -100,7 +100,7 @@ public class ThreadedExecutor : GraphExecutor
         Log.Debug($"Finished executing component {component.DisplayName}");
     }
     
-    public override async Task Push(OutputPlug output, IArtifact value)
+    public override async Task Push(OutputPlug output, IArtifact artifact)
     {
         var component = _componentOutputs
             .Where(pair => pair.Item2.Equals(output))
@@ -115,7 +115,7 @@ public class ThreadedExecutor : GraphExecutor
         var tasks = _connections
             .Where(pair => pair.Item1.Equals(output))
             .Select(pair => pair.Item2)
-            .Select(input => _inputQueues[input].Enqueue(value));
+            .Select(input => _inputQueues[input].Enqueue(artifact));
         await Task.WhenAll(tasks);
 
         var outputFieldName = _fieldInfos
@@ -123,7 +123,7 @@ public class ThreadedExecutor : GraphExecutor
             .Select(pair => pair.Item2)
             .FirstOrDefault()
             ?.Name ?? "Out";
-        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {value.ToString()}");
+        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {artifact.ToString()}");
     }
 
     public override async Task<IArtifact> Get(InputPlug input, CancellationToken token)

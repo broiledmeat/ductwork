@@ -38,7 +38,7 @@ public abstract class GraphExecutor
 
     public abstract Task Execute(CancellationToken token);
 
-    public abstract Task Push(OutputPlug output, IArtifact value);
+    public abstract Task Push(OutputPlug output, IArtifact artifact);
 
     public abstract Task<IArtifact> Get(InputPlug input, CancellationToken token);
 

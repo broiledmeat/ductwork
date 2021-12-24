@@ -87,26 +87,26 @@ public class ComponentHarness
             await _component.Execute(this, token);
         }
         
-        public override Task Push(OutputPlug output, IArtifact value)
+        public override Task Push(OutputPlug output, IArtifact artifact)
         {
             if (!_outputArtifacts.ContainsKey(output))
             {
                 _outputArtifacts[output] = new ConcurrentBag<IArtifact>();
             }
 
-            _outputArtifacts[output].Add(value);
+            _outputArtifacts[output].Add(artifact);
 
             return Task.CompletedTask;
         }
 
-        public async Task Push(InputPlug input, IArtifact value)
+        public async Task Push(InputPlug input, IArtifact artifact)
         {
             if (!_inputQueues.ContainsKey(input))
             {
                 _inputQueues[input] = new AsyncQueue<object?>();
             }
 
-            await _inputQueues[input].Enqueue(value);
+            await _inputQueues[input].Enqueue(artifact);
         }
 
         public override async Task<IArtifact> Get(InputPlug input, CancellationToken token)

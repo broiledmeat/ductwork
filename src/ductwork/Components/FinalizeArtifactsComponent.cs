@@ -32,7 +32,7 @@ public class FinalizeArtifactsComponent : SingleInComponent
 {
     public readonly OutputPlug Out = new();
 
-    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFinalizingArtifact finalizingArtifact)
         {
@@ -59,22 +59,22 @@ public class FinalizeArtifactsComponent : SingleInComponent
 
         if (state == FinalizedResult.FinalizedState.Succeeded)
         {
-            graph.Log.Info($"Finalized {DisplayName} {finalizingArtifact}");
+            executor.Log.Info($"Finalized {DisplayName} {finalizingArtifact}");
         }
         else if (state == FinalizedResult.FinalizedState.SucceededSkipped)
         {
-            graph.Log.Info($"Skipped finalizing {DisplayName} {finalizingArtifact}");
+            executor.Log.Info($"Skipped finalizing {DisplayName} {finalizingArtifact}");
         }
         else if (exception != null)
         {
-            graph.Log.Error(exception, $"Failed finalizing {DisplayName} {finalizingArtifact}");
+            executor.Log.Error(exception, $"Failed finalizing {DisplayName} {finalizingArtifact}");
         }
         else
         {
-            graph.Log.Warn($"Failed finalizing {DisplayName} {finalizingArtifact}");
+            executor.Log.Warn($"Failed finalizing {DisplayName} {finalizingArtifact}");
         }
 
         var resultArtifact = new FinalizedResult(finalizingArtifact, state, exception);
-        await graph.Push(Out, resultArtifact);
+        await executor.Push(Out, resultArtifact);
     }
 }

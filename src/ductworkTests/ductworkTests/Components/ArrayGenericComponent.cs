@@ -12,7 +12,7 @@ public class ArrayGenericComponent<T> : Component
     {
     }
 
-    public override Task Execute(GraphExecutor graph, CancellationToken token)
+    public override Task Execute(GraphExecutor executor, CancellationToken token)
     {
         throw new System.NotImplementedException();
     }

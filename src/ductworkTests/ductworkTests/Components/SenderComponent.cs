@@ -24,7 +24,7 @@ public class SenderComponent : Component
     {
     }
 
-    public override async Task Execute(GraphExecutor graph, CancellationToken token)
+    public override async Task Execute(GraphExecutor executor, CancellationToken token)
     {
         foreach (var value in _values)
         {
@@ -34,7 +34,7 @@ public class SenderComponent : Component
                 int intValue => new IntArtifact(intValue),
                 _ => new ObjectArtifact(value),
             });
-            await graph.Push(Out, artifact);
+            await executor.Push(Out, artifact);
         }
     }
 }

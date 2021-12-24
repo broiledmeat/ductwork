@@ -11,14 +11,14 @@ public class TemplateParserComponent : SingleInSingleOutComponent
 {
     private const string SetContextName = "set_context";
     
-    protected override async Task ExecuteIn(GraphExecutor graph, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {
             return;
         }
         
-        var resource = graph.GetResource<ArtifactNamedValuesResource>();
+        var resource = executor.GetResource<ArtifactNamedValuesResource>();
 
         try
         {
@@ -51,11 +51,11 @@ public class TemplateParserComponent : SingleInSingleOutComponent
                 resource.Set(filePathArtifact, nameArg, args[1]);
             }
 
-            await graph.Push(Out, filePathArtifact);
+            await executor.Push(Out, filePathArtifact);
         }
         catch (Exception e)
         {
-            graph.Log.Error(e, $"Exception parsing {filePathArtifact.FilePath}: {e.Message}");
+            executor.Log.Error(e, $"Exception parsing {filePathArtifact.FilePath}: {e.Message}");
         }
     }
 }
