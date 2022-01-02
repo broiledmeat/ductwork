@@ -9,26 +9,20 @@ namespace ductwork.Components;
 
 public class DirectoryFilePathIteratorComponent : SingleOutComponent
 {
-    public readonly string Path;
-    public readonly bool IsRecursive;
-    public readonly bool IncludeHidden;
-
-    public DirectoryFilePathIteratorComponent(string path, bool isRecursive = true, bool includeHidden = false)
-    {
-        Path = System.IO.Path.GetFullPath(path);
-        IsRecursive = isRecursive;
-        IncludeHidden = includeHidden;
-    }
+    public Setting<string> Path = new();
+    public Setting<bool> IsRecursive = new(true);
+    public Setting<bool> IncludeHidden = new(false);
 
     public override async Task Execute(GraphExecutor executor, CancellationToken token)
     {
+        var fullPath = System.IO.Path.GetFullPath(Path);
         var options = IsRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-        foreach (var path in Directory.EnumerateFiles(Path, "*.*", options))
+        foreach (var path in Directory.EnumerateFiles(fullPath, "*.*", options))
         {
             token.ThrowIfCancellationRequested();
 
-            if (!IncludeHidden && IsPathOrParentsHidden(path))
+            if (!IncludeHidden.Value && IsPathOrParentsHidden(path))
             {
                 continue;
             }

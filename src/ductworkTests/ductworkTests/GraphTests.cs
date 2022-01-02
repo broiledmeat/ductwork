@@ -22,7 +22,7 @@ public class GraphTests
         var values = new object[] {1, "two"};
 
         var graph = new GraphBuilder(nameof(ExecutesWithExpectedOutput_SingleOutToMultiIn));
-        var sender = new SenderComponent(values) {DisplayName = "Sender"};
+        var sender = new SenderComponent {DisplayName = "Sender", Values = values};
         var receiverA = new ReceiverComponent {DisplayName = "ReceiverA"};
         var receiverB = new ReceiverComponent {DisplayName = "ReceiverB"};
 
@@ -44,9 +44,9 @@ public class GraphTests
         var valuesC = new object[] {11, 12};
 
         var graph = new GraphBuilder(nameof(ExecutesWithExpectedOutput_MultiOutToSingleIn));
-        var senderA = new SenderComponent(valuesA) {DisplayName = "SenderA"};
-        var senderB = new SenderComponent(valuesB) {DisplayName = "SenderB"};
-        var senderC = new SenderComponent(valuesC) {DisplayName = "SenderC"};
+        var senderA = new SenderComponent {DisplayName = "SenderA", Values = valuesA};
+        var senderB = new SenderComponent {DisplayName = "SenderB", Values = valuesB};
+        var senderC = new SenderComponent {DisplayName = "SenderC", Values = valuesC};
         var receiver = new ReceiverComponent {DisplayName = "Receiver"};
 
         graph.Add(senderA, senderB, senderC, receiver);
@@ -67,8 +67,8 @@ public class GraphTests
         const int valueB = 2;
 
         var graph = new GraphBuilder(nameof(ExecutesWithExpectedOutput_Adder));
-        var senderA = new SenderComponent(new object[] {valueA}) {DisplayName = "SenderA"};
-        var senderB = new SenderComponent(new object[] {valueB}) {DisplayName = "SenderB"};
+        var senderA = new SenderComponent {DisplayName = "SenderA", Values = new object[] {valueA}};
+        var senderB = new SenderComponent {DisplayName = "SenderB", Values = new object[] {valueB}};
         var adder = new AdderComponent {DisplayName = "Adder"};
         var receiver = new ReceiverComponent {DisplayName = "Receiver"};
 
@@ -81,12 +81,12 @@ public class GraphTests
 
         Assert.AreEqual(valueA + valueB, receiver.Values.FirstOrDefault());
     }
-        
+
     [Test]
     public void ThrowsOnConnectionWithUnaddedComponents()
     {
         var graph = new GraphBuilder(nameof(ThrowsOnConnectionWithUnaddedComponents));
-        var dirIter = new SenderComponent(Array.Empty<object>()) {DisplayName = "Sender"};
+        var dirIter = new SenderComponent {DisplayName = "Sender"};
         var receiver = new ReceiverComponent {DisplayName = "Receiver"};
 
         Assert.Throws<InvalidOperationException>(() => graph.Connect(dirIter.Out, receiver.In));

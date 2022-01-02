@@ -101,48 +101,12 @@ public class GraphXmlLoaderTests
     [Test]
     public void ThrowsOnComponentWithInvalidConstructor()
     {
-        const string xmlMissingArgs = @"
-<graph>
-    <lib path="".\ductworkTests.dll""/>
-    <component key=""Generic"" type=""ArrayGenericComponent:int""/>
-</graph>";
-        Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xmlMissingArgs));
-
-
-        const string xmlIncorrectArgs = @"
-<graph>
-    <lib path="".\ductworkTests.dll""/>
-    <component key=""Generic"" type=""ArrayGenericComponent:string"">
-        <arg type=""array:int""/>
-    </component>
-</graph>";
-        Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xmlIncorrectArgs));
-    }
-
-    [Test]
-    public void ThrowsOnComponentWithNoArgType()
-    {
         const string xml = @"
 <graph>
     <lib path="".\ductworkTests.dll""/>
-    <component key=""Generic"" type=""ArrayGenericComponent:int"">
-        <arg/>
-    </component>
+    <component key=""Invalid"" type=""InvalidConstructorComponent""/>
 </graph>";
-        Assert.Throws<XmlSchemaException>(() => GraphXmlLoader.LoadString(xml));
-    }
-
-    [Test]
-    public void ThrowsOnComponentWithInvalidArgType()
-    {
-        const string xml = @"
-<graph>
-    <lib path="".\ductworkTests.dll""/>
-    <component key=""Generic"" type=""ArrayGenericComponent:int"">
-        <arg type=""invalid""/>
-    </component>
-</graph>";
-        Assert.Throws<XmlSchemaException>(() => GraphXmlLoader.LoadString(xml));
+        Assert.Throws<InvalidOperationException>(() => GraphXmlLoader.LoadString(xml));
     }
 
     [Test]

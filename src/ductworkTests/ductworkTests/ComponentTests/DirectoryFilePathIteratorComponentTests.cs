@@ -24,18 +24,18 @@ public class DirectoryFilePathIteratorComponentTests
             expectedFilePaths.Add(tempFile);
         }
 
-        var component = new DirectoryFilePathIteratorComponent(tempDir);
+        var component = new DirectoryFilePathIteratorComponent {Path = tempDir};
         var harness = new ComponentHarness(component);
 
         var outputs = harness.Execute();
 
         Directory.Delete(tempDir, true);
-        
+
         var filePaths = outputs.GetValueOrDefault(component.Out, Array.Empty<IArtifact>())
             .OfType<IFilePathArtifact>()
             .Select(artifact => artifact.FilePath)
             .ToHashSet();
-        
+
         Assert.That(filePaths.SetEquals(expectedFilePaths));
     }
 }

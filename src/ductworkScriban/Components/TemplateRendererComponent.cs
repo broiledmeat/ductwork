@@ -9,21 +9,16 @@ using Scriban.Functions;
 using Scriban.Parsing;
 using Scriban.Runtime;
 
+#nullable enable
 namespace ductworkScriban.Components;
 
 public class TemplateRendererComponent : SingleInSingleOutComponent
 {
-    public readonly string SourceRoot;
-    public readonly string TargetRoot;
+    public Setting<string> SourceRoot;
+    public Setting<string> TargetRoot;
 
     private ArtifactNamedValuesResource? _resource;
     private TemplateLoader? _templateLoader;
-
-    public TemplateRendererComponent(string sourceRoot, string targetRoot)
-    {
-        SourceRoot = sourceRoot;
-        TargetRoot = targetRoot;
-    }
 
     protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {

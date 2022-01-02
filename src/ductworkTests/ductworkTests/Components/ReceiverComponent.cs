@@ -24,7 +24,7 @@ public class ReceiverComponent : SingleInComponent
         
     protected override Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {
-        if (artifact is not IObjectArtifact objectArtifact)
+        if (artifact is not ObjectArtifact objectArtifact)
         {
             return Task.CompletedTask;
         }

@@ -6,9 +6,11 @@ using ductwork.Executors;
 #nullable enable
 namespace ductworkTests.Components;
 
-public class ArrayGenericComponent<T> : Component
+public class InvalidConstructorComponent : Component
 {
-    public Setting<T[]> Values;
+    public InvalidConstructorComponent(bool unused)
+    {
+    }
 
     public override Task Execute(GraphExecutor executor, CancellationToken token)
     {

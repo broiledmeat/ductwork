@@ -12,28 +12,14 @@ namespace ductworkTests.Components;
 public class SenderComponent : Component
 {
     public readonly OutputPlug Out = new();
-        
-    private readonly object[] _values;
-        
-    public SenderComponent(object[] values)
-    {
-        _values = values;
-    }
 
-    public SenderComponent(int[] values) : this(values.Cast<object>().ToArray())
-    {
-    }
+    public Setting<object[]> Values = new();
 
     public override async Task Execute(GraphExecutor executor, CancellationToken token)
     {
-        foreach (var value in _values)
+        foreach (var value in Values.Value)
         {
-            var artifact = (IArtifact)(value switch
-            {
-                string stringValue => new StringArtifact(stringValue),
-                int intValue => new IntArtifact(intValue),
-                _ => new ObjectArtifact(value),
-            });
+            var artifact = new ObjectArtifact(value);
             await executor.Push(Out, artifact);
         }
     }

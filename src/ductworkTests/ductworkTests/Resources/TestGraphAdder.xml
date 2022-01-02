@@ -3,17 +3,17 @@
     <lib path=".\ductworkTests.dll"/>
     
     <component key="SenderA" type="SenderComponent">
-        <arg type="array:int">
-            <item>1</item>
-            <item>2</item>
-            <item>3</item>
-        </arg>
+        <set name="Values">
+            <item type="int">1</item>
+            <item type="int">2</item>
+            <item type="int">3</item>
+        </set>
     </component>
     <component key="SenderB" type="SenderComponent">
-        <arg type="array:int">
-            <item>5</item>
-            <item>6</item>
-        </arg>
+        <set name="Values">
+            <item type="int">5</item>
+            <item type="int">6</item>
+        </set>
     </component>
     <component key="Adder" type="AdderComponent"/>
     <component key="Receiver" type="ReceiverComponent"/>

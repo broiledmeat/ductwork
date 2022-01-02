@@ -23,10 +23,10 @@ public class CopyFilePathToTargetPathComponentTests
         Directory.CreateDirectory(sourceRoot);
         Directory.CreateDirectory(targetRoot);
         File.WriteAllText(sourceFilePath, content);
-        
-        var component = new CopyFilePathToTargetPathComponent(sourceRoot, targetRoot);
+
+        var component = new CopyFilePathToTargetPathComponent {SourceRoot = sourceRoot, TargetRoot = targetRoot};
         var harness = new ComponentHarness(component);
-        
+
         harness.QueuePush(component.In, new FilePathArtifact(sourceFilePath));
 
         var outputs = harness.Execute();
@@ -35,13 +35,13 @@ public class CopyFilePathToTargetPathComponentTests
             .OfType<IFilePathAndTargetFilePathArtifact>()
             .Select(artifact => artifact.TargetFilePath)
             .FirstOrDefault();
-        
+
         Assert.NotNull(filePath, $"Component did not push an `{nameof(IFilePathAndTargetFilePathArtifact)}` artifact " +
                                  $"to its `{nameof(component.Out)}` plug.");
         Assert.True(File.Exists(filePath), "Component claims it wrote to a file, but the file does not exist.");
 
         var fileContent = File.ReadAllText(filePath!);
-        
+
         Directory.Delete(root, true);
 
         Assert.AreEqual(content, fileContent);

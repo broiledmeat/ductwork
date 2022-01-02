@@ -9,23 +9,25 @@ namespace ductwork.Components;
 
 public class CopyFilePathToTargetPathComponent : SingleInSingleOutComponent
 {
-    public readonly string SourceRoot;
-    public readonly string TargetRoot;
+    public Setting<string> SourceRoot = new();
+    public Setting<string> TargetRoot = new();
 
-    public CopyFilePathToTargetPathComponent(string sourceRoot, string targetRoot)
-    {
-        SourceRoot = sourceRoot;
-        TargetRoot = targetRoot;
-    }
+    private string? _fullSourceRoot;
+    private string? _fullTargetRoot;
 
     protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
     {
+        _fullSourceRoot ??= Path.GetFullPath(SourceRoot);
+        _fullTargetRoot ??= Path.GetFullPath(TargetRoot);
+
         if (artifact is not IFilePathArtifact filePathArtifact)
         {
             return;
         }
-        
-        var targetPath = Path.Combine(TargetRoot, Path.GetRelativePath(SourceRoot, filePathArtifact.FilePath));
+
+        var targetPath = Path.Combine(
+            _fullTargetRoot,
+            Path.GetRelativePath(_fullSourceRoot, filePathArtifact.FilePath));
         var copyFileArtifact = new CopyFileArtifact(filePathArtifact.FilePath, targetPath);
         await executor.Push(Out, copyFileArtifact);
     }

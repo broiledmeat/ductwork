@@ -17,15 +17,16 @@ public class AdderComponent : Component
     {
         while (!executor.IsFinished(InX) && !executor.IsFinished(InY))
         {
-            var x = await executor.Get(InX, token);
-            var y = await executor.Get(InY, token);
+            var xArtifact = await executor.Get(InX, token);
+            var yArtifact = await executor.Get(InY, token);
 
-            if (x is not IntArtifact xInt || y is not IntArtifact yInt)
+            if (xArtifact is not ObjectArtifact {Object: int xInt} ||
+                yArtifact is not ObjectArtifact {Object: int yInt})
             {
                 continue;
             }
-            
-            var artifact = new IntArtifact(xInt.Value + yInt.Value);
+
+            var artifact = new ObjectArtifact(xInt + yInt);
             await executor.Push(Out, artifact);
         }
     }
