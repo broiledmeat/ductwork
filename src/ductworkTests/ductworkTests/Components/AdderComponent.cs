@@ -13,7 +13,7 @@ public class AdderComponent : Component
     public readonly InputPlug InY = new();
     public readonly OutputPlug Out = new();
 
-    public override async Task Execute(GraphExecutor executor, CancellationToken token)
+    public override async Task Execute(IExecutor executor, CancellationToken token)
     {
         while (!executor.IsFinished(InX) && !executor.IsFinished(InY))
         {

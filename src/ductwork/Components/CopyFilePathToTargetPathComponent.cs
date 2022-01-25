@@ -15,7 +15,7 @@ public class CopyFilePathToTargetPathComponent : SingleInSingleOutComponent
     private string? _fullSourceRoot;
     private string? _fullTargetRoot;
 
-    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
     {
         _fullSourceRoot ??= Path.GetFullPath(SourceRoot);
         _fullTargetRoot ??= Path.GetFullPath(TargetRoot);

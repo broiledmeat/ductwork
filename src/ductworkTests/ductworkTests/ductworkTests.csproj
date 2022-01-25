@@ -39,4 +39,8 @@
       <None Remove="Resources\TestGraphMissingComponentArgs.xml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Executors" />
+    </ItemGroup>
+
 </Project>

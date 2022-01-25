@@ -10,7 +10,7 @@ public class ArrayGenericComponent<T> : Component
 {
     public Setting<T[]> Values;
 
-    public override Task Execute(GraphExecutor executor, CancellationToken token)
+    public override Task Execute(IExecutor executor, CancellationToken token)
     {
         throw new System.NotImplementedException();
     }

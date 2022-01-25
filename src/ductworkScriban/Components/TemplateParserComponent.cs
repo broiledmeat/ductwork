@@ -12,7 +12,7 @@ public class TemplateParserComponent : SingleInSingleOutComponent
 {
     private const string SetContextName = "set_context";
     
-    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {

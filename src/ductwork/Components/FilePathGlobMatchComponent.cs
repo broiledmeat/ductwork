@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
@@ -18,7 +16,7 @@ public class FilePathGlobMatchComponent : SingleInComponent
 
     private Glob? _glob;
 
-    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
     {
         _glob ??= new Glob(Glob);
         

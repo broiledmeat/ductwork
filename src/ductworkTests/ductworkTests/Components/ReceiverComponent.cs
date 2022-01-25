@@ -22,7 +22,7 @@ public class ReceiverComponent : SingleInComponent
 
     public readonly ReadOnlyCollection<object> Values;
         
-    protected override Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
+    protected override Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not ObjectArtifact objectArtifact)
         {

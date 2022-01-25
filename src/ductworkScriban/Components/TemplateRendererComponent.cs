@@ -20,7 +20,7 @@ public class TemplateRendererComponent : SingleInSingleOutComponent
     private ArtifactNamedValuesResource? _resource;
     private TemplateLoader? _templateLoader;
 
-    protected override async Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token)
+    protected override async Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
     {
         if (artifact is not IFilePathArtifact filePathArtifact)
         {

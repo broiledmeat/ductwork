@@ -13,7 +13,7 @@ public class DirectoryFilePathIteratorComponent : SingleOutComponent
     public Setting<bool> IsRecursive = new(true);
     public Setting<bool> IncludeHidden = new(false);
 
-    public override async Task Execute(GraphExecutor executor, CancellationToken token)
+    public override async Task Execute(IExecutor executor, CancellationToken token)
     {
         var fullPath = System.IO.Path.GetFullPath(Path);
         var options = IsRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;

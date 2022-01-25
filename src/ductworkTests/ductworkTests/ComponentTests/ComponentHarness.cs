@@ -44,7 +44,7 @@ public class ComponentHarness
         return _executor.GetOutputArtifacts();
     }
 
-    private class HarnessExecutor : GraphExecutor
+    private class HarnessExecutor : IExecutor
     {
         private readonly Component _component;
         private readonly ConcurrentDictionary<OutputPlug, ConcurrentBag<IArtifact>> _outputArtifacts = new();

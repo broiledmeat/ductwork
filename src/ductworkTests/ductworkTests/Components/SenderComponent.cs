@@ -15,7 +15,7 @@ public class SenderComponent : Component
 
     public Setting<object[]> Values = new();
 
-    public override async Task Execute(GraphExecutor executor, CancellationToken token)
+    public override async Task Execute(IExecutor executor, CancellationToken token)
     {
         foreach (var value in Values.Value)
         {

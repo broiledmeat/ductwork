@@ -11,7 +11,7 @@ public abstract class Component
 {
     public string DisplayName { get; set; } = Guid.NewGuid().ToString();
 
-    public abstract Task Execute(GraphExecutor executor, CancellationToken token);
+    public abstract Task Execute(IExecutor executor, CancellationToken token);
 
     public override string ToString()
     {
@@ -28,7 +28,7 @@ public abstract class SingleInComponent : Component
 
     public readonly InputPlug In = new();
 
-    public override async Task Execute(GraphExecutor executor, CancellationToken token)
+    public override async Task Execute(IExecutor executor, CancellationToken token)
     {
         var runner = executor.Runner;
 
@@ -50,9 +50,9 @@ public abstract class SingleInComponent : Component
         await ExecuteComplete(executor, token);
     }
 
-    protected abstract Task ExecuteIn(GraphExecutor executor, IArtifact artifact, CancellationToken token);
+    protected abstract Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token);
 
-    protected virtual Task ExecuteComplete(GraphExecutor executor, CancellationToken token)
+    protected virtual Task ExecuteComplete(IExecutor executor, CancellationToken token)
     {
         return Task.CompletedTask;
     }
