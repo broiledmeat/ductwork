@@ -1,10 +1,10 @@
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
+using ductwork.Builders.Xml;
 using ductwork.Executors;
-using ductwork.FileLoaders;
 
 namespace ductworkCLI.Commands;
 
@@ -16,8 +16,22 @@ public class ExecuteCommand : ICommand
 
     public async ValueTask ExecuteAsync(IConsole console)
     {
-        var graph = GraphXmlLoader.LoadPath(Path);
-        var executor = graph.GetExecutor<ThreadedExecutor>();
-        await executor.Execute(CancellationToken.None);
+        var token = console.RegisterCancellationHandler();
+        var builder = XmlBuilder.LoadPath(Path);
+
+        var exceptions = builder.Validate().ToArray();
+
+        if (exceptions.Any())
+        {
+            foreach (var exception in exceptions)
+            {
+                await console.Error.WriteLineAsync(exception.ToString());
+            }
+            
+            return;
+        }
+
+        var executor = builder.GetGraph().GetExecutor<ThreadedExecutor>();
+        await executor.Execute(token);
     }
 }
