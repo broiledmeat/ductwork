@@ -3,6 +3,7 @@ using System.Linq;
 using ductwork.Artifacts;
 using GlobExpressions;
 
+#nullable enable
 namespace ductwork.Resources;
 
 public class ArtifactNamedValuesResource : IResource
