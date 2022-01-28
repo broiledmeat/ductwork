@@ -114,7 +114,7 @@ public class XmlBuilder : IBuilder
         AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         var assemblies = LibraryDefs
             .Select(def => Assembly.LoadFile(def.FilePath))
-            .Concat(new[] {Assembly.GetExecutingAssembly()})
+            .Concat(new[] {Assembly.GetExecutingAssembly(), Assembly.GetCallingAssembly()})
             .ToArray();
         assemblies.ForEach(assembly => assembly.GetTypes());
 
