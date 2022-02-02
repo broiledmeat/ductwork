@@ -3,19 +3,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
 using ductwork.Executors;
+using ductwork.Resources;
 using ductwork.TaskRunners;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 
-namespace ductworkTests.ComponentTests;
+#nullable enable
+namespace ductworkTests.TestHelpers;
 
 public class ComponentHarness
 {
@@ -57,20 +58,14 @@ public class ComponentHarness
             config.AddRule(
                 LogLevel.Trace,
                 LogLevel.Fatal,
-                new ColoredConsoleTarget {Layout = GraphBuilder.DefaultLogFormat});
+                new ColoredConsoleTarget {Layout = Logging.DefaultLogFormat});
             LogManager.Configuration = config;
         }
 
         public HarnessExecutor(string displayName, Component component)
-            : base(
-                displayName,
-                LogManager.GetLogger(displayName),
-                Array.Empty<Component>(),
-                Array.Empty<(Component, OutputPlug)>(),
-                Array.Empty<(Component, InputPlug)>(),
-                Array.Empty<(object, FieldInfo)>(),
-                Array.Empty<(OutputPlug, InputPlug)>())
         {
+            DisplayName = displayName;
+            Log = LogManager.GetLogger(displayName);
             _component = component;
         }
 
@@ -80,14 +75,16 @@ public class ComponentHarness
                 _outputArtifacts.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
         }
 
-        public override TaskRunner Runner => _runner ??= new ThreadedTaskRunner(1);
+        public string DisplayName { get; }
+        public Logger Log { get; }
+        public TaskRunner Runner => _runner ??= new ThreadedTaskRunner(1);
 
-        public override async Task Execute(CancellationToken token)
+        public async Task Execute(CancellationToken token)
         {
             await _component.Execute(this, token);
         }
         
-        public override Task Push(OutputPlug output, IArtifact artifact)
+        public Task Push(OutputPlug output, IArtifact artifact)
         {
             if (!_outputArtifacts.ContainsKey(output))
             {
@@ -109,7 +106,7 @@ public class ComponentHarness
             await _inputQueues[input].Enqueue(artifact);
         }
 
-        public override async Task<IArtifact> Get(InputPlug input, CancellationToken token)
+        public async Task<IArtifact> Get(InputPlug input, CancellationToken token)
         {
             var queue = _inputQueues[input];
 
@@ -127,8 +124,13 @@ public class ComponentHarness
             }
         }
 
-        public override int Count(InputPlug input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
+        public int Count(InputPlug input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
 
-        public override bool IsFinished(InputPlug input) => Count(input) == 0;
+        public bool IsFinished(InputPlug input) => Count(input) == 0;
+        
+        public T GetResource<T>() where T : IResource
+        {
+            throw new NotImplementedException();
+        }
     }
 }

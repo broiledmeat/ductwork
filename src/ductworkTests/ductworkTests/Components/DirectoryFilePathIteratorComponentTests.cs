@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
-namespace ductworkTests.ComponentTests;
+#nullable enable
+namespace ductworkTests.Components;
 
 public class DirectoryFilePathIteratorComponentTests
 {

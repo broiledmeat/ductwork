@@ -1,13 +1,11 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
-using ductwork.Artifacts;
 using ductwork.Components;
 using ductwork.Executors;
 
 #nullable enable
-namespace ductworkTests.Components;
+namespace ductworkTests.TestHelpers;
 
 public class SenderComponent : Component
 {

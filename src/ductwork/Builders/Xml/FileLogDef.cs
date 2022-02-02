@@ -32,7 +32,7 @@ public class FileLogDef : NodeBackedDef
     {
         if (!XmlBuilder.HasAttribute(Node, PathAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {PathAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{PathAttr}\" attribute.");
         }
 
         if (XmlBuilder.HasAttribute(Node, MinAttr))

@@ -27,12 +27,12 @@ public class ComponentDef : NodeBackedDef
     {
         if (!XmlBuilder.HasAttribute(Node, NameAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {NameAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{NameAttr}\" attribute.");
         }
 
         if (!XmlBuilder.HasAttribute(Node, TypeNameAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {TypeNameAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{TypeNameAttr}\" attribute.");
         }
     }
 }
@@ -56,7 +56,7 @@ public class ComponentSettingDef : NodeBackedDef
     {
         if (!XmlBuilder.HasAttribute(Node, NameAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {NameAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{NameAttr}\" attribute.");
         }
     }
 }

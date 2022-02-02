@@ -3,9 +3,11 @@ using System.Linq;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
-namespace ductworkTests.ComponentTests;
+#nullable enable
+namespace ductworkTests.Components;
 
 public class FilePathGlobMatchComponentTests
 {

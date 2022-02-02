@@ -5,7 +5,7 @@ using ductwork.Components;
 using ductwork.Executors;
 
 #nullable enable
-namespace ductworkTests.Components;
+namespace ductworkTests.TestHelpers;
 
 public class AdderComponent : Component
 {

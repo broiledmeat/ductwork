@@ -21,7 +21,7 @@ public class LibraryDef : NodeBackedDef
     {
         if (!XmlBuilder.HasAttribute(Node, PathAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {PathAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{PathAttr}\" attribute.");
         }
     }
 }

@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <graph>
-    <lib path=".\ductworkTests.dll"/>
-    
-    <component key="SenderA" type="SenderComponent">
+    <component name="SenderA" type="SenderComponent">
         <set name="Values">
             <item>foo</item>
             <item>bar</item>
             <item>baz</item>
         </set>
     </component>
-    <component key="SenderB" type="SenderComponent">
+    <component name="SenderB" type="SenderComponent">
         <set name="Values">
             <item>fizz</item>
             <item>buzz</item>
         </set>
     </component>
-    <component key="ReceiverA" type="ReceiverComponent"/>
-    <component key="ReceiverB" type="ReceiverComponent"/>
+    <component name="ReceiverA" type="ReceiverComponent"/>
+    <component name="ReceiverB" type="ReceiverComponent"/>
 
     <connection out="SenderA.Out" in="ReceiverA.In"/>
     <connection out="SenderA.Out" in="ReceiverB.In"/>
-    
     <connection out="SenderB.Out" in="ReceiverB.In"/>
 </graph>

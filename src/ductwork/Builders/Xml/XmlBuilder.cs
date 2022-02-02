@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Schema;
 using ductwork.Artifacts;
@@ -34,6 +35,7 @@ public class XmlBuilder : IBuilder
         {new[] {typeof(bool)}, new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
     };
 
+    private bool _hasInstalledLoadingHook = false;
     private string[] _libraryLookupPaths = Array.Empty<string>();
     private XmlDocument _document = new();
     private Logger? _logger;
@@ -67,29 +69,70 @@ public class XmlBuilder : IBuilder
 
     public IEnumerable<Exception> Validate()
     {
-        var libraries = LibraryDefs.ToArray();
-        var logs = LoggerDefs.ToArray();
-        var components = ComponentDefs.ToArray();
-        var connections = ConnectionDefs.ToArray();
-
         var nodes = Enumerable.Empty<object>()
-            .Concat(libraries)
-            .Concat(logs)
-            .Concat(components)
-            .Concat(connections)
-            .OfType<NodeBackedDef>();
+            .Concat(LibraryDefs)
+            .Concat(LoggerDefs)
+            .Concat(ComponentDefs)
+            .Concat(ConnectionDefs)
+            .OfType<NodeBackedDef>()
+            .ToList();
 
-        foreach (var node in nodes)
+        // Validate individual nodes and bubble up their exceptions. Remove any excepted nodes from the nodes list.
+        foreach (var node in nodes.ToArray())
         {
-            var exceptions = node.Validate();
+            var exceptions = node.Validate().ToArray();
+
+            if (!exceptions.Any())
+            {
+                continue;
+            }
 
             foreach (var exception in exceptions)
             {
                 yield return exception;
             }
+
+            nodes.Remove(node);
         }
 
-        // TODO: Load assemblies and do component type validation
+        var assemblies = GetLibraryAssemblies();
+        var componentTypes = GetAssembliesComponentTypes(assemblies);
+
+        // Validate components
+        var components = nodes.OfType<ComponentDef>().ToArray();
+        var componentNames = components.Select(def => def.Name).ToArray();
+        var exceptedComponentNames = new HashSet<string>();
+
+        foreach (var def in components)
+        {
+            if (!exceptedComponentNames.Contains(def.Name) && componentNames.Count(name => name == def.Name) > 1)
+            {
+                yield return new InvalidOperationException($"Component name \"{def.Name}\" is not unique.");
+                exceptedComponentNames.Add(def.Name);
+            }
+
+            if (!componentTypes.ContainsKey(def.TypeName))
+            {
+                yield return new InvalidOperationException($"No loaded component type \"{def.TypeName}\".");
+            }
+        }
+
+        // Validate connections
+        var connections = nodes.OfType<ConnectionDef>().ToArray();
+
+        foreach (var def in connections)
+        {
+            if (!componentNames.Contains(def.OutputComponentName))
+            {
+                yield return new InvalidOperationException($"No component with name \"{def.OutputComponentName}\".");
+            }
+
+            if (!componentNames.Contains(def.InputComponentName))
+            {
+                yield return new InvalidOperationException($"No component with name \"{def.InputComponentName}\".");
+            }
+        }
+
         // TODO: Value converter validation
     }
 
@@ -111,24 +154,9 @@ public class XmlBuilder : IBuilder
             }
         }
 
-        AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        var assemblies = LibraryDefs
-            .Select(def => Assembly.LoadFile(def.FilePath))
-            .Concat(new[] {Assembly.GetExecutingAssembly(), Assembly.GetCallingAssembly()})
-            .ToArray();
-        assemblies.ForEach(assembly => assembly.GetTypes());
-
-        var componentTypes = assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
-            .Where(type => type.IsAssignableTo(typeof(Component)))
-            .ToDictionary(
-                type => type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name,
-                type => type);
-
-        var artifactTypes = assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
-            .Where(type => type.IsAssignableTo(typeof(IArtifact)))
-            .ToDictionary(type => type.Name, type => type);
+        var assemblies = GetLibraryAssemblies();
+        var componentTypes = GetAssembliesComponentTypes(assemblies);
+        var artifactTypes = GetAssembliesArtifactTypes(assemblies);
 
         var components = ComponentDefs
             .ToDictionary(
@@ -280,7 +308,46 @@ public class XmlBuilder : IBuilder
     internal static string GetAttribute(XmlNode node, string name)
     {
         return node.Attributes?[name]?.Value ??
-               throw new XmlSchemaException($"Node must have a `{name}` attribute.");
+               throw new XmlSchemaException($"Node must have a \"{name}\" attribute.");
+    }
+
+    private Assembly[] GetLibraryAssemblies()
+    {
+        if (!_hasInstalledLoadingHook)
+        {
+            _hasInstalledLoadingHook = true;
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+        }
+
+        var assemblies = LibraryDefs
+            .Select(def => Assembly.LoadFile(def.FilePath))
+            .Concat(AppDomain.CurrentDomain.GetAssemblies())
+            .Distinct()
+            .ToArray();
+
+        assemblies.ForEach(assembly => assembly.GetTypes());
+
+        return assemblies;
+    }
+
+    private static Dictionary<string, Type> GetAssembliesComponentTypes(IEnumerable<Assembly> assemblies)
+    {
+        return assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type.IsAssignableTo(typeof(Component)))
+            .Distinct()
+            .ToDictionary(
+                type => type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name,
+                type => type);
+    }
+
+    private static Dictionary<string, Type> GetAssembliesArtifactTypes(IEnumerable<Assembly> assemblies)
+    {
+        return assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type.IsAssignableTo(typeof(IArtifact)))
+            .Distinct()
+            .ToDictionary(type => type.Name, type => type);
     }
 
     private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)

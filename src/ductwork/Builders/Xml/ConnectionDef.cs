@@ -27,12 +27,12 @@ public class ConnectionDef : NodeBackedDef
     {
         if (!XmlBuilder.HasAttribute(Node, OutputAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {OutputAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{OutputAttr}\" attribute.");
         }
         
         if (!XmlBuilder.HasAttribute(Node, InputAttr))
         {
-            yield return new XmlSchemaValidationException($"Node requires {InputAttr} attribute.");
+            yield return new XmlSchemaValidationException($"Node requires \"{InputAttr}\" attribute.");
         }
     }
 
