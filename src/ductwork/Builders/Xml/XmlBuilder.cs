@@ -16,7 +16,7 @@ namespace ductwork.Builders.Xml;
 
 public class XmlBuilder : IBuilder
 {
-    private record ValueConverter(Type Type, Func<XmlNode, object> Convert);
+    public record ValueConverter(Type Type, Func<XmlNode, object> Convert);
 
     private static readonly HashSet<(Type, string)> ValueTypeNames = new()
     {
@@ -26,13 +26,13 @@ public class XmlBuilder : IBuilder
         (typeof(bool), "bool"),
     };
 
-    private static readonly Dictionary<Type[], ValueConverter> ValueConverters = new()
+    private static readonly Dictionary<Type, ValueConverter> ValueConverters = new()
     {
-        {new[] {typeof(object)}, new ValueConverter(typeof(string), node => node.InnerText.Trim())},
-        {new[] {typeof(string)}, new ValueConverter(typeof(string), node => node.InnerText.Trim())},
-        {new[] {typeof(int)}, new ValueConverter(typeof(int), node => Convert.ToInt32(node.InnerText.Trim()))},
-        {new[] {typeof(float)}, new ValueConverter(typeof(float), node => Convert.ToSingle(node.InnerText.Trim()))},
-        {new[] {typeof(bool)}, new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
+        {typeof(object), new ValueConverter(typeof(string), node => node.InnerText.Trim())},
+        {typeof(string), new ValueConverter(typeof(string), node => node.InnerText.Trim())},
+        {typeof(int), new ValueConverter(typeof(int), node => Convert.ToInt32(node.InnerText.Trim()))},
+        {typeof(float), new ValueConverter(typeof(float), node => Convert.ToSingle(node.InnerText.Trim()))},
+        {typeof(bool), new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
     };
 
     private XmlDocument _document = new();
@@ -257,27 +257,22 @@ public class XmlBuilder : IBuilder
         settingFieldInfo.SetValue(component, setting);
     }
 
-    private static ValueConverter GetValueConverter(Type[] types)
+    public static ValueConverter GetValueConverter(Type type)
     {
         var converter = ValueConverters
-            .Where(pair => pair.Key.ToHashSet().SetEquals(types))
+            .Where(pair => pair.Key == type)
             .Select(pair => pair.Value)
             .FirstOrDefault();
 
         if (converter == null)
         {
-            throw new XmlSchemaException($"Unsupported type \"{types}\".");
+            throw new XmlSchemaException($"Unsupported type \"{type}\".");
         }
 
         return converter;
     }
 
-    private static ValueConverter GetValueConverter(Type type)
-    {
-        return GetValueConverter(new[] {type});
-    }
-
-    private static ValueConverter GetValueConverter(string? name)
+    public static ValueConverter GetValueConverter(string? name)
     {
         var type = ValueTypeNames.Where(pair => pair.Item2 == name).Select(pair => pair.Item1).FirstOrDefault();
 
@@ -315,6 +310,9 @@ public class XmlBuilder : IBuilder
             .ToArray();
     }
 
+    public static string GetTypeReferenceName(Type type)
+    {
+        return type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name;
     }
 
     private static Dictionary<string, Type> GetAssembliesComponentTypes(IEnumerable<Assembly> assemblies)
@@ -323,9 +321,7 @@ public class XmlBuilder : IBuilder
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsAssignableTo(typeof(Component)))
             .Distinct()
-            .ToDictionary(
-                type => type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name,
-                type => type);
+            .ToDictionary(GetTypeReferenceName, type => type);
     }
 
     private static Dictionary<string, Type> GetAssembliesArtifactTypes(IEnumerable<Assembly> assemblies)
