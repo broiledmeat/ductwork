@@ -18,6 +18,7 @@ public class ComponentDef : NodeBackedDef
 
     public string Name => XmlBuilder.GetAttribute(Node, NameAttr);
     public string TypeName => XmlBuilder.GetAttribute(Node, TypeNameAttr);
+    public string BaseTypeName => XmlBuilder.SplitTypeNames(TypeName).Item1;
 
     public IEnumerable<ComponentSettingDef> Settings => Node
         .SelectXPath("set")

@@ -35,8 +35,6 @@ public class XmlBuilder : IBuilder
         {new[] {typeof(bool)}, new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
     };
 
-    private bool _hasInstalledLoadingHook = false;
-    private string[] _libraryLookupPaths = Array.Empty<string>();
     private XmlDocument _document = new();
     private Logger? _logger;
     private string _defaultDisplayName = "graph";
@@ -111,7 +109,7 @@ public class XmlBuilder : IBuilder
                 exceptedComponentNames.Add(def.Name);
             }
 
-            if (!componentTypes.ContainsKey(def.TypeName))
+            if (!componentTypes.ContainsKey(def.BaseTypeName))
             {
                 yield return new InvalidOperationException($"No loaded component type \"{def.TypeName}\".");
             }
@@ -189,11 +187,8 @@ public class XmlBuilder : IBuilder
     {
         var document = new XmlDocument();
         document.Load(Path.GetFullPath(xmlFilepath));
-        return new XmlBuilder
-        {
-            _document = document,
-            _libraryLookupPaths = new[] {Path.GetDirectoryName(xmlFilepath)!}
-        };
+        return new XmlBuilder {_document = document,};
+    }
     }
 
     public static XmlBuilder LoadString(string xml)
@@ -294,7 +289,7 @@ public class XmlBuilder : IBuilder
         return GetValueConverter(type);
     }
 
-    private static (string, string?) SplitTypeNames(string name)
+    public static (string, string?) SplitTypeNames(string name)
     {
         var split = name.IndexOf(':');
         return split == -1 ? (name, null) : (name[..split], name[(split + 1)..]);
@@ -313,17 +308,12 @@ public class XmlBuilder : IBuilder
 
     private Assembly[] GetLibraryAssemblies()
     {
-        if (!_hasInstalledLoadingHook)
-        {
-            _hasInstalledLoadingHook = true;
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        }
-
-        var assemblies = LibraryDefs
-            .Select(def => Assembly.LoadFile(def.FilePath))
+        return LibraryDefs
+            .Select(def => AssemblyLoader.Load(def.FilePath))
             .Concat(AppDomain.CurrentDomain.GetAssemblies())
             .Distinct()
             .ToArray();
+    }
 
         assemblies.ForEach(assembly => assembly.GetTypes());
 
@@ -348,41 +338,5 @@ public class XmlBuilder : IBuilder
             .Where(type => type.IsAssignableTo(typeof(IArtifact)))
             .Distinct()
             .ToDictionary(type => type.Name, type => type);
-    }
-
-    private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
-    {
-        var name = args.Name;
-
-        if (name.Contains(".resources"))
-        {
-            return null;
-        }
-
-        var assembly = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .FirstOrDefault(a => a.FullName == name);
-        if (assembly != null)
-        {
-            return assembly;
-        }
-
-        var filename = $"{name.Split(',').First()}.dll";
-        var lookupPaths = _libraryLookupPaths.Concat(new[] {Path.GetFullPath("./")});
-
-        foreach (var lookupPath in lookupPaths)
-        {
-            var path = Path.Join(lookupPath, filename);
-            try
-            {
-                return Assembly.LoadFrom(path);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-
-        return null;
     }
 }
