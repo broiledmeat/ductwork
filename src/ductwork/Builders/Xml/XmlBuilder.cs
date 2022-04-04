@@ -315,9 +315,6 @@ public class XmlBuilder : IBuilder
             .ToArray();
     }
 
-        assemblies.ForEach(assembly => assembly.GetTypes());
-
-        return assemblies;
     }
 
     private static Dictionary<string, Type> GetAssembliesComponentTypes(IEnumerable<Assembly> assemblies)
