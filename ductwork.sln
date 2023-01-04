@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductwork", "src\ductwork\du
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkTests", "src\ductworkTests\ductworkTests\ductworkTests.csproj", "{B8B55EAB-44F7-4AF7-BC44-1613494C3ACA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkBuilder", "src\ductworkBuilder\ductworkBuilder.csproj", "{7D2D01E0-7766-4607-92AC-9936FBCD6216}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkCLI", "src\ductworkCLI\ductworkCLI.csproj", "{087E7F1F-4FF0-4E69-A133-FA19E0ABC681}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkScriban", "src\ductworkScriban\ductworkScriban.csproj", "{8507AFBF-8355-4E16-A867-A93926E4CEAF}"
@@ -24,10 +22,6 @@ Global
 		{B8B55EAB-44F7-4AF7-BC44-1613494C3ACA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8B55EAB-44F7-4AF7-BC44-1613494C3ACA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8B55EAB-44F7-4AF7-BC44-1613494C3ACA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D2D01E0-7766-4607-92AC-9936FBCD6216}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D2D01E0-7766-4607-92AC-9936FBCD6216}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D2D01E0-7766-4607-92AC-9936FBCD6216}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D2D01E0-7766-4607-92AC-9936FBCD6216}.Release|Any CPU.Build.0 = Release|Any CPU
 		{087E7F1F-4FF0-4E69-A133-FA19E0ABC681}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{087E7F1F-4FF0-4E69-A133-FA19E0ABC681}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{087E7F1F-4FF0-4E69-A133-FA19E0ABC681}.Release|Any CPU.ActiveCfg = Release|Any CPU
