@@ -3,11 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
 using ductwork.Executors;
+using Force.Crc32;
 
 #nullable enable
 namespace ductwork.Components;
 
-public class FinalizedResult : IArtifact
+public class FinalizedResult : Artifact
 {
     public enum FinalizedState
     {
@@ -16,16 +17,20 @@ public class FinalizedResult : IArtifact
         SucceededSkipped,
     }
 
-    public IFinalizingArtifact Artifact;
-    public FinalizedState State;
-    public Exception? Exception;
-
     public FinalizedResult(IFinalizingArtifact artifact, FinalizedState state, Exception? exception)
     {
+        Id = artifact.Id;
         Artifact = artifact;
         State = state;
         Exception = exception;
+
+        Checksum = Crc32Algorithm.Append(artifact.Checksum, BitConverter.GetBytes((int) state));
+        ;
     }
+
+    public IFinalizingArtifact Artifact { get; }
+    public FinalizedState State { get; }
+    public Exception? Exception { get; }
 }
 
 public class FinalizeArtifactsComponent : SingleInComponent
@@ -38,7 +43,7 @@ public class FinalizeArtifactsComponent : SingleInComponent
         {
             return;
         }
-        
+
         var state = FinalizedResult.FinalizedState.SucceededSkipped;
         Exception? exception = null;
 

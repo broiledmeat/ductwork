@@ -6,21 +6,23 @@ namespace ductwork.Artifacts;
 
 public interface IArtifact
 {
-    string? ToString()
-    {
-        return $"{GetType().Name}()";
-    }
+    string Id { get; }
+    uint Checksum { get; }
 }
+
+public interface IFilePathArtifact : IArtifact
+{
+    string FilePath { get; }
+}
+
+public interface ITargetFilePathArtifact : IArtifact
+{
+    string TargetFilePath { get; }
+}
+
 
 public interface IFinalizingArtifact : IArtifact
 {
-    string Id { get; }
-    string ContentId { get; }
     bool RequiresFinalize() => true;
     Task<bool> Finalize(CancellationToken token = default);
-
-    new string? ToString()
-    {
-        return $"{GetType().Name}({Id}, {ContentId})";
-    }
 }

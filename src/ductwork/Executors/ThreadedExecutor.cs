@@ -141,7 +141,7 @@ public class ThreadedExecutor : IExecutor
             .Select(pair => pair.Item2)
             .FirstOrDefault()
             ?.Name ?? "Out";
-        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed: {artifact.ToString()}");
+        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed {artifact}");
     }
 
     public async Task<IArtifact> Get(InputPlug input, CancellationToken token)

@@ -1,18 +1,18 @@
 #nullable enable
 namespace ductwork.Artifacts;
 
-public interface IFilePathArtifact : IArtifact
+public class FilePathArtifact : Artifact, IFilePathArtifact
 {
-    string FilePath { get; }
-}
+    public FilePathArtifact(string filePath)
+    {
+        FilePath = filePath;
+        Id = filePath;
+    }
+    
+    public string FilePath { get; }
 
-public interface ITargetFilePathArtifact : IArtifact
-{
-    string TargetFilePath { get; }
+    public override string ToString()
+    {
+        return $"{GetType().Name}({FilePath})";
+    }
 }
-
-public interface IFilePathAndTargetFilePathArtifact : IFilePathArtifact, ITargetFilePathArtifact
-{
-}
-
-public record FilePathArtifact(string FilePath) : IFilePathArtifact;

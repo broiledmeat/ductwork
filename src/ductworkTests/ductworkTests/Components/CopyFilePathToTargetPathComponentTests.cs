@@ -33,11 +33,11 @@ public class CopyFilePathToTargetPathComponentTests
         var outputs = harness.Execute();
 
         var filePath = outputs.GetValueOrDefault(component.Out, Array.Empty<IArtifact>())
-            .OfType<IFilePathAndTargetFilePathArtifact>()
+            .OfType<ITargetFilePathArtifact>()
             .Select(artifact => artifact.TargetFilePath)
             .FirstOrDefault();
 
-        Assert.NotNull(filePath, $"Component did not push an `{nameof(IFilePathAndTargetFilePathArtifact)}` artifact " +
+        Assert.NotNull(filePath, $"Component did not push an `{nameof(ITargetFilePathArtifact)}` artifact " +
                                  $"to its `{nameof(component.Out)}` plug.");
         Assert.True(File.Exists(filePath), "Component claims it wrote to a file, but the file does not exist.");
 

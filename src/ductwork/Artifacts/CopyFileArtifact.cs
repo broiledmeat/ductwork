@@ -1,27 +1,28 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Force.Crc32;
 
 #nullable enable
 namespace ductwork.Artifacts;
 
-public class CopyFileArtifact : IFinalizingArtifact, IFilePathAndTargetFilePathArtifact
+public class CopyFileArtifact : Artifact, IFilePathArtifact, ITargetFilePathArtifact, IFinalizingArtifact
 {
-    public string FilePath { get; }
-    public string TargetFilePath { get; }
-        
-    public CopyFileArtifact(string sourcePath, string targetPath)
+    public CopyFileArtifact(string sourceFilePath, string targetFilePath)
     {
-        FilePath = sourcePath;
-        TargetFilePath = targetPath;
-            
+        FilePath = sourceFilePath;
+        TargetFilePath = targetFilePath;
+
         var info = new FileInfo(FilePath);
-        ContentId = $"{info.Length};{info.LastWriteTimeUtc}";
+        
+        Id = targetFilePath;
+        Checksum = CreateChecksum(new object[] { info.Length, info.LastWriteTimeUtc.ToBinary() });
     }
 
-    public string Id => TargetFilePath;
+    public string FilePath { get; }
 
-    public string ContentId { get; }
+    public string TargetFilePath { get; }
 
     public bool RequiresFinalize()
     {
