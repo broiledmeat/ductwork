@@ -2,24 +2,17 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Crates;
 using ductwork.Executors;
 
 #nullable enable
 namespace ductwork.Components;
 
-public abstract class Component
+public abstract class Component : IComponent
 {
     public string DisplayName { get; set; } = Guid.NewGuid().ToString();
 
     public abstract Task Execute(IExecutor executor, CancellationToken token);
-
-    public override string ToString()
-    {
-        const string removeSuffix = nameof(Component);
-        var name = GetType().Name;
-        name = name.EndsWith(removeSuffix) ? name[..^removeSuffix.Length] : name;
-        return name;
-    }
 }
 
 public abstract class SingleInComponent : Component
@@ -42,15 +35,15 @@ public abstract class SingleInComponent : Component
                 continue;
             }
 
-            var value = await executor.Get(In, token);
-            await runner.RunAsync(() => ExecuteIn(executor, value, token), token);
+            var crate = await executor.Get(In, token);
+            await runner.RunAsync(() => ExecuteIn(executor, crate, token), token);
         }
 
         await runner.WaitAsync(token);
         await ExecuteComplete(executor, token);
     }
 
-    protected abstract Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token);
+    protected abstract Task ExecuteIn(IExecutor executor, ICrate crate, CancellationToken token);
 
     protected virtual Task ExecuteComplete(IExecutor executor, CancellationToken token)
     {

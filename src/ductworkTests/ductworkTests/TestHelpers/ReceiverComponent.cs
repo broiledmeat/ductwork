@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Crates;
 using ductwork.Executors;
 
 #nullable enable
@@ -22,9 +23,9 @@ public class ReceiverComponent : SingleInComponent
 
     public readonly ReadOnlyCollection<object> Values;
         
-    protected override Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
+    protected override Task ExecuteIn(IExecutor executor, ICrate crate, CancellationToken token)
     {
-        if (artifact is not ObjectArtifact objectArtifact)
+        if (crate.Get<ObjectArtifact>() is not { } objectArtifact)
         {
             return Task.CompletedTask;
         }

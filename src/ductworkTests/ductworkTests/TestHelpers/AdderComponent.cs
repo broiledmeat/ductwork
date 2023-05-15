@@ -17,17 +17,17 @@ public class AdderComponent : Component
     {
         while (!executor.IsFinished(InX) && !executor.IsFinished(InY))
         {
-            var xArtifact = await executor.Get(InX, token);
-            var yArtifact = await executor.Get(InY, token);
+            var xCrate = await executor.Get(InX, token);
+            var yCrate = await executor.Get(InY, token);
 
-            if (xArtifact is not ObjectArtifact {Object: int xInt} ||
-                yArtifact is not ObjectArtifact {Object: int yInt})
+            if (xCrate.Get<ObjectArtifact>() is not {Object: int xInt} ||
+                yCrate.Get<ObjectArtifact>() is not {Object: int yInt})
             {
                 continue;
             }
 
-            var artifact = new ObjectArtifact(xInt + yInt);
-            await executor.Push(Out, artifact);
+            var crate = executor.CreateCrate(new ObjectArtifact(xInt + yInt));
+            await executor.Push(Out, crate);
         }
     }
 }

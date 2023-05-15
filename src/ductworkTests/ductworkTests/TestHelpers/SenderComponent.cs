@@ -17,8 +17,8 @@ public class SenderComponent : Component
     {
         foreach (var value in Values.Value)
         {
-            var artifact = new ObjectArtifact(value);
-            await executor.Push(Out, artifact);
+            var crate = executor.CreateCrate(new ObjectArtifact(value));
+            await executor.Push(Out, crate);
         }
     }
 }

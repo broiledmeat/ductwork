@@ -3,6 +3,7 @@ using System.Linq;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Crates;
 using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
@@ -13,19 +14,20 @@ public class FilePathGlobMatchComponentTests
 {
     private static void PushPaths(
         ComponentHarness graph,
-        FilePathGlobMatchComponent component,
+        SourcePathGlobMatchComponent component,
         IEnumerable<string> paths)
     {
         paths
-            .Select(path => new FilePathArtifact(path))
-            .ForEach(artifact => graph.QueuePush(component.In, artifact));
+            .Select(path => graph.CreateCrate(new SourcePathArtifact(path)))
+            .ForEach(crate => graph.QueuePush(component.In, crate));
     }
 
-    private static bool ArePathSetsEqual(IEnumerable<string> expectedPaths, IEnumerable<IArtifact> actualArtifacts)
+    private static bool ArePathSetsEqual(IEnumerable<string> expectedPaths, IEnumerable<ICrate> actualCrates)
     {
-        var actualPaths = actualArtifacts
-            .OfType<FilePathArtifact>()
-            .Select(artifact => artifact.FilePath)
+        var actualPaths = actualCrates
+            .SelectMany(crate => crate.GetAll())
+            .OfType<ISourcePathArtifact>()
+            .Select(artifact => artifact.SourcePath)
             .ToHashSet();
         return expectedPaths.ToHashSet().SetEquals(actualPaths);
     }
@@ -42,7 +44,7 @@ public class FilePathGlobMatchComponentTests
             "parent/sub/childB.tart",
         };
 
-        var component = new FilePathGlobMatchComponent {Glob = "parent/**/*.t?t"};
+        var component = new SourcePathGlobMatchComponent {Glob = "parent/**/*.t?t"};
         var harness = new ComponentHarness(component);
 
         PushPaths(harness, component, paths);
@@ -76,7 +78,7 @@ public class FilePathGlobMatchComponentTests
             "parent/sub/childB.tart",
         };
 
-        var component = new FilePathGlobMatchComponent {Glob = "parent/*.t?t"};
+        var component = new SourcePathGlobMatchComponent {Glob = "parent/*.t?t"};
         var harness = new ComponentHarness(component);
 
         PushPaths(harness, component, paths);

@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Crates;
 using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
 #nullable enable
 namespace ductworkTests.Components;
 
-public class DirectoryFilePathIteratorComponentTests
+public class RootSourcePathIteratorComponentTests
 {
     [Test]
     public void ExecutesWithExpectedOutput()
@@ -26,16 +28,17 @@ public class DirectoryFilePathIteratorComponentTests
             expectedFilePaths.Add(tempFile);
         }
 
-        var component = new DirectoryFilePathIteratorComponent {Path = tempDir};
+        var component = new RootSourcePathIteratorComponent {SourceRoot = tempDir};
         var harness = new ComponentHarness(component);
 
         var outputs = harness.Execute();
 
         Directory.Delete(tempDir, true);
 
-        var filePaths = outputs.GetValueOrDefault(component.Out, Array.Empty<IArtifact>())
-            .OfType<IFilePathArtifact>()
-            .Select(artifact => artifact.FilePath)
+        var filePaths = outputs.GetValueOrDefault(component.Out, Array.Empty<ICrate>())
+            .Select(crate => crate.Get<ISourcePathArtifact>())
+            .NotNull()
+            .Select(artifact => artifact.SourcePath)
             .ToHashSet();
 
         Assert.That(filePaths.SetEquals(expectedFilePaths));

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,23 +7,19 @@ namespace ductwork.Artifacts;
 
 public interface IArtifact
 {
-    string Id { get; }
-    uint Checksum { get; }
 }
 
-public interface IFilePathArtifact : IArtifact
+public interface IContentArtifact : IArtifact
 {
-    string FilePath { get; }
+    Task<byte[]> GetContent(CancellationToken token);
 }
 
-public interface ITargetFilePathArtifact : IArtifact
+public interface ISourcePathArtifact : IContentArtifact
 {
-    string TargetFilePath { get; }
+    string SourcePath { get; }
 }
 
-
-public interface IFinalizingArtifact : IArtifact
+public interface ITargetPathArtifact : IArtifact
 {
-    bool RequiresFinalize() => true;
-    Task<bool> Finalize(CancellationToken token = default);
+    string TargetPath { get; }
 }

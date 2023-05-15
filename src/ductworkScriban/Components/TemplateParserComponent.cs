@@ -1,5 +1,6 @@
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Crates;
 using ductwork.Executors;
 using ductwork.Resources;
 using Scriban;
@@ -8,22 +9,27 @@ using Scriban.Syntax;
 #nullable enable
 namespace ductworkScriban.Components;
 
-public class TemplateParserComponent : SingleInSingleOutComponent
+public class TemplateParserComponent : InputAwaiterComponent
 {
     private const string SetContextName = "set_context";
     
-    protected override async Task ExecuteIn(IExecutor executor, IArtifact artifact, CancellationToken token)
+    public Setting<string> SourceRoot = string.Empty;
+    
+    protected override async Task ExecuteIn(IExecutor executor, ICrate crate, CancellationToken token)
     {
-        if (artifact is not IFilePathArtifact filePathArtifact)
+        if (crate.Get<ISourcePathArtifact>() is not { } sourceFilePathArtifact)
         {
             return;
         }
         
-        var resource = executor.GetResource<ArtifactNamedValuesResource>();
+        var resource = executor.GetResource<NamedValuesResource>();
+
+        var relPath = Path.GetRelativePath(SourceRoot, sourceFilePathArtifact.SourcePath);
+        resource.Set(sourceFilePathArtifact.SourcePath, "_relPath", relPath);
 
         try
         {
-            var template = Template.Parse(await File.ReadAllTextAsync(filePathArtifact.FilePath, token));
+            var template = Template.Parse(await File.ReadAllTextAsync(sourceFilePathArtifact.SourcePath, token));
 
             var setContextExpressionArgs = template.Page.Body.Statements
                 .OfType<ScriptExpressionStatement>()
@@ -49,14 +55,14 @@ public class TemplateParserComponent : SingleInSingleOutComponent
                     throw new Exception($"`{SetContextName}` first argument must be a string.");
                 }
 
-                resource.Set(filePathArtifact, nameArg, args[1]);
+                resource.Set(sourceFilePathArtifact.SourcePath, nameArg, args[1]);
             }
 
-            await executor.Push(Out, filePathArtifact);
+            await base.ExecuteIn(executor, crate, token);
         }
         catch (Exception e)
         {
-            executor.Log.Error(e, $"Exception parsing {filePathArtifact.FilePath}: {e.Message}");
+            executor.Log.Error(e, $"Exception parsing {sourceFilePathArtifact.SourcePath}: {e.Message}");
         }
     }
 }

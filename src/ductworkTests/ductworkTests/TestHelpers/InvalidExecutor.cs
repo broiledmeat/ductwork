@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
+using ductwork.Crates;
 using ductwork.Executors;
 using ductwork.Resources;
 using ductwork.TaskRunners;
@@ -22,12 +23,22 @@ public class InvalidExecutor : IExecutor
         throw new NotImplementedException();
     }
 
-    public Task Push(OutputPlug output, IArtifact artifact)
+    public ICrate CreateCrate(params IArtifact[] artifacts)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IArtifact> Get(InputPlug input, CancellationToken token)
+    public ICrate CreateCrate(ICrate baseCrate, params IArtifact[] artifacts)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Push(OutputPlug output, ICrate crate)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ICrate> Get(InputPlug input, CancellationToken token)
     {
         throw new NotImplementedException();
     }

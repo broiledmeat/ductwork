@@ -6,9 +6,9 @@ using GlobExpressions;
 #nullable enable
 namespace ductwork.Resources;
 
-public class ArtifactNamedValuesResource : IResource
+public class NamedValuesResource : IResource
 {
-    public record NamedValue(IFilePathArtifact Artifact, string Name, object? Value);
+    public record NamedValue(string Context, string Name, object? Value);
 
     private readonly object _lock = new();
     private readonly HashSet<NamedValue> _values = new();
@@ -37,18 +37,18 @@ public class ArtifactNamedValuesResource : IResource
             .ToArray();
     }
 
-    public NamedValue[] Get(IFilePathArtifact artifact)
+    public NamedValue[] GetAllForContext(string context)
     {
-        return _values.Where(item => item.Artifact == artifact).ToArray();
+        return _values.Where(item => item.Context == context).ToArray();
     }
 
-    public void Set(IFilePathArtifact artifact, string name, object value)
+    public void Set(string context, string name, object value)
     {
         lock (_lock)
         {
-            if (!_values.Any(item => item.Artifact == artifact && item.Name == name))
+            if (!_values.Any(item => item.Context == context && item.Name == name))
             {
-                _values.Add(new NamedValue(artifact, name, value));
+                _values.Add(new NamedValue(context, name, value));
             }
         }
     }

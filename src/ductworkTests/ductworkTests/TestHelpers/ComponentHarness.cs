@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ductwork;
 using ductwork.Artifacts;
 using ductwork.Components;
+using ductwork.Crates;
 using ductwork.Executors;
 using ductwork.Resources;
 using ductwork.TaskRunners;
@@ -21,34 +22,43 @@ namespace ductworkTests.TestHelpers;
 public class ComponentHarness
 {
     private readonly HarnessExecutor _executor;
-    private readonly List<(InputPlug, IArtifact)> _queuedPushes = new();
+    private readonly List<(InputPlug, ICrate)> _queuedPushes = new();
 
     public ComponentHarness(Component component)
     {
         _executor = new HarnessExecutor($"Harness<{component.DisplayName}>", component);
     }
 
-    public void QueuePush(InputPlug input, IArtifact value)
+    public ICrate CreateCrate(params IArtifact[] artifacts)
+    {
+        return _executor.CreateCrate(artifacts);
+    }
+
+    public void QueuePush(InputPlug input, ICrate value)
     {
         _queuedPushes.Add((input, value));
     }
 
-    public ReadOnlyDictionary<OutputPlug, IArtifact[]> Execute()
+    public ReadOnlyDictionary<OutputPlug, ICrate[]> Execute()
     {
-        foreach (var (input, artifact) in _queuedPushes)
-        {
-            _executor.Push(input, artifact).Wait();
-        }
+        Task
+            .Run(async () =>
+            {
+                var pushTasks = _queuedPushes
+                    .Select(push => _executor.Push(push.Item1, push.Item2))
+                    .ToArray();
+                await Task.WhenAll(pushTasks);
+                await _executor.Execute(CancellationToken.None);
+            })
+            .Wait();
 
-        _executor.Execute(CancellationToken.None).Wait();
-
-        return _executor.GetOutputArtifacts();
+        return _executor.GetOutputCrates();
     }
 
     private class HarnessExecutor : IExecutor
     {
         private readonly Component _component;
-        private readonly ConcurrentDictionary<OutputPlug, ConcurrentBag<IArtifact>> _outputArtifacts = new();
+        private readonly ConcurrentDictionary<OutputPlug, ConcurrentBag<ICrate>> _outputCrates = new();
         private readonly ConcurrentDictionary<InputPlug, AsyncQueue<object?>> _inputQueues = new();
         private TaskRunner? _runner;
 
@@ -69,10 +79,10 @@ public class ComponentHarness
             _component = component;
         }
 
-        public ReadOnlyDictionary<OutputPlug, IArtifact[]> GetOutputArtifacts()
+        public ReadOnlyDictionary<OutputPlug, ICrate[]> GetOutputCrates()
         {
-            return new ReadOnlyDictionary<OutputPlug, IArtifact[]>(
-                _outputArtifacts.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
+            return new ReadOnlyDictionary<OutputPlug, ICrate[]>(
+                _outputCrates.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
         }
 
         public string DisplayName { get; }
@@ -83,30 +93,40 @@ public class ComponentHarness
         {
             await _component.Execute(this, token);
         }
-        
-        public Task Push(OutputPlug output, IArtifact artifact)
+
+        public ICrate CreateCrate(params IArtifact[] artifacts)
         {
-            if (!_outputArtifacts.ContainsKey(output))
+            return new Crate(artifacts);
+        }
+
+        public ICrate CreateCrate(ICrate baseCrate, params IArtifact[] artifacts)
+        {
+            return new Crate(baseCrate, artifacts);
+        }
+
+        public Task Push(OutputPlug output, ICrate crate)
+        {
+            if (!_outputCrates.ContainsKey(output))
             {
-                _outputArtifacts[output] = new ConcurrentBag<IArtifact>();
+                _outputCrates[output] = new ConcurrentBag<ICrate>();
             }
 
-            _outputArtifacts[output].Add(artifact);
+            _outputCrates[output].Add(crate);
 
             return Task.CompletedTask;
         }
 
-        public async Task Push(InputPlug input, IArtifact artifact)
+        public async Task Push(InputPlug input, ICrate crate)
         {
             if (!_inputQueues.ContainsKey(input))
             {
                 _inputQueues[input] = new AsyncQueue<object?>();
             }
 
-            await _inputQueues[input].Enqueue(artifact);
+            await _inputQueues[input].Enqueue(crate);
         }
 
-        public async Task<IArtifact> Get(InputPlug input, CancellationToken token)
+        public async Task<ICrate> Get(InputPlug input, CancellationToken token)
         {
             var queue = _inputQueues[input];
 
@@ -120,14 +140,14 @@ public class ComponentHarness
                     continue;
                 }
 
-                return (IArtifact) (await queue.Dequeue(token))!;
+                return (ICrate) (await queue.Dequeue(token))!;
             }
         }
 
         public int Count(InputPlug input) => _inputQueues.GetValueOrDefault(input)?.Count ?? 0;
 
         public bool IsFinished(InputPlug input) => Count(input) == 0;
-        
+
         public T GetResource<T>() where T : IResource
         {
             throw new NotImplementedException();

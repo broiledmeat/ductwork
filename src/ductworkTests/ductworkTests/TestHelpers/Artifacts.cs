@@ -7,7 +7,6 @@ public class ObjectArtifact : Artifact
 {
     public ObjectArtifact(object obj)
     {
-        Id = obj.ToString() ?? string.Empty;
         Object = obj;
     }
     

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Crates;
 using ductwork.Resources;
 using ductwork.TaskRunners;
 using NLog;
@@ -118,14 +119,36 @@ public class ThreadedExecutor : IExecutor
         Log.Debug($"Finished executing component {component.DisplayName}");
     }
 
-    public async Task Push(OutputPlug output, IArtifact artifact)
+    public ICrate CreateCrate(params IArtifact[] artifacts)
+    {
+        return new Crate(artifacts);
+    }
+
+    public ICrate CreateCrate(ICrate baseCrate, params IArtifact[] artifacts)
+    {
+        return new Crate(baseCrate, artifacts);
+    }
+
+    public async Task Push(OutputPlug output, ICrate crate)
     {
         var component = _componentOutputs
             .Where(pair => pair.Item2.Equals(output))
             .Select(pair => pair.Item1)
             .FirstOrDefault();
 
-        if (component == null || !_connections.Any(pair => pair.Item1.Equals(output)))
+        if (component == null)
+        {
+            return;
+        }
+
+        var outputFieldName = _fieldInfos
+            .Where(pair => pair.Item1.Equals(output))
+            .Select(pair => pair.Item2)
+            .FirstOrDefault()
+            ?.Name ?? "?";
+        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed {crate}");
+
+        if (!_connections.Any(pair => pair.Item1.Equals(output)))
         {
             return;
         }
@@ -133,18 +156,11 @@ public class ThreadedExecutor : IExecutor
         var tasks = _connections
             .Where(pair => pair.Item1.Equals(output))
             .Select(pair => pair.Item2)
-            .Select(input => _inputQueues[input].Enqueue(artifact));
+            .Select(input => _inputQueues[input].Enqueue(crate));
         await Task.WhenAll(tasks);
-
-        var outputFieldName = _fieldInfos
-            .Where(pair => pair.Item1.Equals(output))
-            .Select(pair => pair.Item2)
-            .FirstOrDefault()
-            ?.Name ?? "Out";
-        Log.Debug($"Plug {component.DisplayName}.{outputFieldName} pushed {artifact}");
     }
 
-    public async Task<IArtifact> Get(InputPlug input, CancellationToken token)
+    public async Task<ICrate> Get(InputPlug input, CancellationToken token)
     {
         if (!_inputQueues.ContainsKey(input))
         {
@@ -163,7 +179,7 @@ public class ThreadedExecutor : IExecutor
                 continue;
             }
 
-            return (IArtifact) (await queue.Dequeue(token))!;
+            return (ICrate) (await queue.Dequeue(token))!;
         }
     }
 
