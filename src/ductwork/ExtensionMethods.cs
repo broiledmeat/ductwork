@@ -18,7 +18,7 @@ public static class ExtensionMethods
             .Select(fieldInfo => new FieldResult<T>(fieldInfo, (T) fieldInfo.GetValue(obj)!));
     }
 
-    public static IEnumerable<T> NotNull<T>(this IEnumerable<T> enumerable)
+    public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> enumerable)
     {
         return enumerable.Where(item => item != null)!;
     }
