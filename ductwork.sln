@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductwork", "src\ductwork\ductwork.csproj", "{ED81B19C-B6C3-44D7-8944-B91B8774DD63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkTests", "src\ductworkTests\ductworkTests\ductworkTests.csproj", "{B8B55EAB-44F7-4AF7-BC44-1613494C3ACA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkTests", "src\ductworkTests\ductworkTests.csproj", "{B8B55EAB-44F7-4AF7-BC44-1613494C3ACA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ductworkCLI", "src\ductworkCLI\ductworkCLI.csproj", "{087E7F1F-4FF0-4E69-A133-FA19E0ABC681}"
 EndProject

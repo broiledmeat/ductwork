@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\ductwork\ductwork.csproj" />
+      <ProjectReference Include="..\ductwork\ductwork.csproj" />
     </ItemGroup>
 
     <ItemGroup>
