@@ -48,10 +48,10 @@ public class ThreadedExecutor : IExecutor
             .ToHashSet();
 
         var outputFieldInfos = components
-            .GetFields<OutputPlug>()
+            .SelectMany(component => component.GetFields<OutputPlug>())
             .Select(result => ((object) result.Value, result.Info));
         var inputFieldInfos = components
-            .GetFields<InputPlug>()
+            .SelectMany(component => component.GetFields<InputPlug>())
             .Select(result => ((object) result.Value, result.Info));
         _fieldInfos = outputFieldInfos.Concat(inputFieldInfos).ToHashSet();
 
