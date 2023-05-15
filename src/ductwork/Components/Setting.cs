@@ -25,7 +25,7 @@ public readonly struct Setting<T> : ISetting
 
     public bool HasValue => _value != null;
 
-    public T Value => _value ?? throw new Exception("Value not set.");
+    public T Value => _value ?? throw new Exception($"{GetType().Name}<{typeof(T).Name}> value is not set.");
 
     object ISetting.Value => Value!;
     
