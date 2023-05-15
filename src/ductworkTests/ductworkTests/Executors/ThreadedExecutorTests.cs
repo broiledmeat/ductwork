@@ -90,4 +90,17 @@ public class ThreadedExecutorTests
 
         Assert.AreEqual(expectedValueA + expectedValueB, receiver.Values.FirstOrDefault());
     }
+
+    [Test, Timeout(2000)]
+    public void ExecutesWithOrphanInputWithoutHanging()
+    {
+        var receiver = new ReceiverComponent();
+        var components = new Component[] {receiver};
+        var connections = new (OutputPlug, InputPlug)[] { };
+        var graph = new Graph(Name, Logger, components, connections);
+
+        Assert.IsEmpty(graph.Validate());
+
+        graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
+    }
 }
