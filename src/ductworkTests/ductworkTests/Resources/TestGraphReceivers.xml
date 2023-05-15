@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graph>
+    <component name="SenderA" type="SenderComponent">
+        <set name="Values">
+            <item>foo</item>
+            <item>bar</item>
+            <item>baz</item>
+        </set>
+    </component>
+    <component name="SenderB" type="SenderComponent">
+        <set name="Values">
+            <item>fizz</item>
+            <item>buzz</item>
+        </set>
+    </component>
+    <component name="ReceiverA" type="ReceiverComponent"/>
+    <component name="ReceiverB" type="ReceiverComponent"/>
+
+    <connection out="SenderA.Out" in="ReceiverA.In"/>
+    <connection out="SenderA.Out" in="ReceiverB.In"/>
+    <connection out="SenderB.Out" in="ReceiverB.In"/>
+</graph>

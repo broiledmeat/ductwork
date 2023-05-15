@@ -29,7 +29,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="Resources\TestGraphAdder.xml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <None Remove="Resources\TestGraphRepeater.xml" />
+      <Content Include="Resources\TestGraphReceivers.xml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>
