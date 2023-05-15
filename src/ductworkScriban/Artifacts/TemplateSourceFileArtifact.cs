@@ -7,7 +7,6 @@ using Scriban.Functions;
 using Scriban.Parsing;
 using Scriban.Runtime;
 
-#nullable enable
 namespace ductworkScriban.Artifacts;
 
 public class TemplateSourceFileArtifact : Artifact, ISourcePathArtifact

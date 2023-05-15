@@ -1,4 +1,3 @@
-#nullable enable
 namespace ductwork;
 
 public interface IPlug

@@ -1,9 +1,7 @@
-using System.Threading;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 
-#nullable enable
 namespace ductwork;
 
 public static class Logging

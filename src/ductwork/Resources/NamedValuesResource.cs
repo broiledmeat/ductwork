@@ -1,15 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using ductwork.Artifacts;
 using GlobExpressions;
 
-#nullable enable
 namespace ductwork.Resources;
 
 public class NamedValuesResource : IResource
 {
-    public record NamedValue(string Context, string Name, object? Value);
-
     private readonly object _lock = new();
     private readonly HashSet<NamedValue> _values = new();
 
@@ -52,4 +48,6 @@ public class NamedValuesResource : IResource
             }
         }
     }
+
+    public record NamedValue(string Context, string Name, object? Value);
 }

@@ -2,13 +2,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
-using ductwork;
-using ductwork.Artifacts;
 using ductwork.Components;
 using ductwork.Crates;
 using ductwork.Executors;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
 public class ReceiverComponent : SingleInComponent
@@ -34,7 +31,7 @@ public class ReceiverComponent : SingleInComponent
         {
             _values.Add(objectArtifact.Object);
         }
-            
+
         return Task.CompletedTask;
     }
 }

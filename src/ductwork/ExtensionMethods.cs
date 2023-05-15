@@ -4,13 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 
-#nullable enable
 namespace ductwork;
 
 public static class ExtensionMethods
 {
-    internal record FieldResult<T>(FieldInfo Info, T Value);
-
     internal static IEnumerable<FieldResult<T>> GetFields<T>(this object obj)
     {
         return obj.GetType().GetFields()
@@ -50,4 +47,6 @@ public static class ExtensionMethods
             yield return child;
         }
     }
+
+    internal record FieldResult<T>(FieldInfo Info, T Value);
 }

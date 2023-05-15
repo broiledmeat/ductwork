@@ -7,7 +7,6 @@ using ductwork.Crates;
 using ductwork.Executors;
 using Force.Crc32;
 
-#nullable enable
 namespace ductwork.Components;
 
 public class WriteContentToTargetPathComponent : SingleInComponent

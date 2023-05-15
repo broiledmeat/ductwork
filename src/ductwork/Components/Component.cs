@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ductwork.Artifacts;
 using ductwork.Crates;
 using ductwork.Executors;
 
-#nullable enable
 namespace ductwork.Components;
 
 public abstract class Component : IComponent

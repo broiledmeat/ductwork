@@ -8,7 +8,6 @@ using ductworkTests.TestHelpers;
 using NLog;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Executors;
 
 public class ThreadedExecutorTests
@@ -91,7 +90,8 @@ public class ThreadedExecutorTests
         Assert.AreEqual(expectedValueA + expectedValueB, receiver.Values.FirstOrDefault());
     }
 
-    [Test, Timeout(2000)]
+    [Test]
+    [Timeout(2000)]
     public void ExecutesWithOrphanInputWithoutHanging()
     {
         var receiver = new ReceiverComponent();

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
@@ -7,7 +6,6 @@ using ductwork.Resources;
 using ductwork.TaskRunners;
 using NLog;
 
-#nullable enable
 namespace ductwork.Executors;
 
 public interface IExecutor

@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Threading;
 using ductwork.Artifacts;
@@ -12,7 +11,7 @@ public class ContentArtifactTests
     public void GetContentEqualsSourceContent()
     {
         var sourceContent = Guid.NewGuid().ToByteArray();
-        
+
         var artifact = new ContentArtifact(sourceContent);
         var artifactContent = artifact.GetContent(CancellationToken.None).Result;
 

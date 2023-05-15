@@ -11,7 +11,6 @@ using ductwork.Resources;
 using ductwork.TaskRunners;
 using NLog;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
 public class DummyExecutor : IExecutor
@@ -54,7 +53,7 @@ public class DummyExecutor : IExecutor
     {
         throw new NotImplementedException();
     }
-    
+
     public ICrate CreateCrate(ICrate baseCrate, params IArtifact[] artifacts)
     {
         throw new NotImplementedException();

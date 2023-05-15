@@ -5,7 +5,6 @@ using ductwork.Artifacts;
 using ductwork.Crates;
 using ductwork.Executors;
 
-#nullable enable
 namespace ductwork.Components;
 
 public class TransformSourcePathToTargetPathComponent : SingleInSingleOutComponent
@@ -22,7 +21,7 @@ public class TransformSourcePathToTargetPathComponent : SingleInSingleOutCompone
 
         var relFilePath = Path.GetRelativePath(SourceRoot, sourceFilePathArtifact.SourcePath);
         var targetFilePath = Path.GetFullPath(Path.Combine(TargetRoot, relFilePath));
-        
+
         executor.Push(Out, executor.CreateCrate(crate, new TargetPathArtifact(targetFilePath)));
 
         return Task.CompletedTask;

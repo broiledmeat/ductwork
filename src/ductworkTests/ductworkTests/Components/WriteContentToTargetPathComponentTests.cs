@@ -2,11 +2,9 @@ using System;
 using System.IO;
 using ductwork.Artifacts;
 using ductwork.Components;
-using ductwork.Crates;
 using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Components;
 
 public class WriteContentToTargetPathComponentTests

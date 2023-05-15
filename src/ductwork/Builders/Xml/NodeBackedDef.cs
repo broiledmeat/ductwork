@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-#nullable enable
 namespace ductwork.Builders.Xml;
 
 public abstract class NodeBackedDef

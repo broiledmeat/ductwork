@@ -5,13 +5,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
+using ductwork.Components;
 using ductwork.Crates;
 using ductwork.Resources;
 using ductwork.TaskRunners;
 using NLog;
-using Component = ductwork.Components.Component;
 
-#nullable enable
 namespace ductwork.Executors;
 
 public class ThreadedExecutor : IExecutor
@@ -60,7 +59,7 @@ public class ThreadedExecutor : IExecutor
             .Select(plugs => plugs.Item2)
             .Distinct()
             .ForEach(input => _inputQueues.Add(input, new AsyncQueue<object?>()));
-        
+
         // Find any component inputs without any Output->Input connections, and add them to the completed set.
         var orphanInputs = components
             .SelectMany(component => component.GetFields<InputPlug>())

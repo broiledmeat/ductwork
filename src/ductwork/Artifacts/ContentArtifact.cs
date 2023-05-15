@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-#nullable enable
 namespace ductwork.Artifacts;
 
 public class ContentArtifact : Artifact, IContentArtifact
@@ -12,7 +11,7 @@ public class ContentArtifact : Artifact, IContentArtifact
     {
         _content = content;
     }
-    
+
     public Task<byte[]> GetContent(CancellationToken token)
     {
         return Task.FromResult(_content);

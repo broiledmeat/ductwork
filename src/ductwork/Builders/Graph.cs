@@ -6,7 +6,6 @@ using ductwork.Components;
 using ductwork.Executors;
 using NLog;
 
-#nullable enable
 namespace ductwork.Builders;
 
 public class Graph

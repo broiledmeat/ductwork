@@ -1,4 +1,3 @@
-#nullable enable
 namespace ductwork.Artifacts;
 
 public class TargetPathArtifact : Artifact, ITargetPathArtifact
@@ -7,7 +6,7 @@ public class TargetPathArtifact : Artifact, ITargetPathArtifact
     {
         TargetPath = targetPath;
     }
-    
+
     public string TargetPath { get; }
 
     public override string ToString()

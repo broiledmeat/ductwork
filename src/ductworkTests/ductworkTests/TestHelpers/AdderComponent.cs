@@ -4,7 +4,6 @@ using ductwork;
 using ductwork.Components;
 using ductwork.Executors;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
 public class AdderComponent : Component

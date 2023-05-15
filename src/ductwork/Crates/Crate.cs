@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using ductwork.Artifacts;
 
-#nullable enable
 namespace ductwork.Crates;
 
 public class Crate : ICrate
 {
-    private IArtifact[] _artifacts = Array.Empty<IArtifact>();
+    private readonly IArtifact[] _artifacts;
 
     public Crate(params IArtifact[] artifacts)
     {

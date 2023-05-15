@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-#nullable enable
 namespace ductwork;
 
 public static class AssemblyLoader
@@ -30,7 +29,7 @@ public static class AssemblyLoader
 
             try
             {
-                var assembly = Assembly.LoadFile(_path); 
+                var assembly = Assembly.LoadFile(_path);
                 // Resolve any dependencies by forcing types to load.
                 assembly.GetTypes();
                 return assembly;

@@ -8,7 +8,6 @@ using ductwork.Crates;
 using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Components;
 
 public class TransformSourcePathToTargetPathComponentTests
@@ -49,7 +48,7 @@ public class TransformSourcePathToTargetPathComponentTests
 
         var sourcePaths = paths.Select(relPath => Path.Combine(sourceRoot, relPath)).ToHashSet();
 
-        var component = new TransformSourcePathToTargetPathComponent()
+        var component = new TransformSourcePathToTargetPathComponent
         {
             SourceRoot = sourceRoot,
             TargetRoot = targetRoot,

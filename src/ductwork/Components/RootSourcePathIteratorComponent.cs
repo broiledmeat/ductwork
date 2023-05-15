@@ -2,10 +2,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ductwork.Artifacts;
-using ductwork.Crates;
 using ductwork.Executors;
 
-#nullable enable
 namespace ductwork.Components;
 
 public class RootSourcePathIteratorComponent : SingleOutComponent

@@ -1,11 +1,9 @@
 using System.Linq;
 using ductwork;
 using ductwork.Builders.Xml;
-using ductworkTests.Components;
 using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Builders;
 
 public class XmlBuilderTests
@@ -126,7 +124,7 @@ public class XmlBuilderTests
     [Test]
     public void CreatesGraphWithConnections()
     {
-        var xml = GetGraphXml($@"
+        var xml = GetGraphXml(@"
 <component name=""DummyA"" type=""DummyComponent""/>
 <component name=""DummyB"" type=""DummyComponent""/>
 <connection out=""DummyA.Out"" in=""DummyB.In""/>
@@ -289,7 +287,7 @@ public class XmlBuilderTests
         var senderAToReceiverA = FindConnection(senderA!.Out, receiverA!.In);
         var senderAToReceiverB = FindConnection(senderA!.Out, receiverB!.In);
         var senderBToReceiverB = FindConnection(senderB!.Out, receiverB!.In);
-        
+
         Assert.NotNull(senderAToReceiverA);
         Assert.NotNull(senderAToReceiverB);
         Assert.NotNull(senderBToReceiverB);

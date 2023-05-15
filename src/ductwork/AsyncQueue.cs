@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-#nullable enable
 namespace ductwork;
 
 public class AsyncQueue<T> : IAsyncEnumerable<T>
@@ -23,7 +22,7 @@ public class AsyncQueue<T> : IAsyncEnumerable<T>
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken token = default)
     {
         await _enumerationSemaphore.WaitAsync(token);
-            
+
         try
         {
             while (true)

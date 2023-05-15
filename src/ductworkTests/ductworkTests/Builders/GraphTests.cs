@@ -7,7 +7,6 @@ using ductworkTests.TestHelpers;
 using NLog;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Builders;
 
 public class GraphTests
@@ -21,8 +20,8 @@ public class GraphTests
         var graph = new Graph(
             Name,
             Logger,
-            System.Array.Empty<Component>(),
-            System.Array.Empty<(OutputPlug, InputPlug)>());
+            Array.Empty<Component>(),
+            Array.Empty<(OutputPlug, InputPlug)>());
 
         Assert.IsEmpty(graph.Validate());
 
@@ -35,8 +34,8 @@ public class GraphTests
         var graph = new Graph(
             Name,
             Logger,
-            System.Array.Empty<Component>(),
-            System.Array.Empty<(OutputPlug, InputPlug)>());
+            Array.Empty<Component>(),
+            Array.Empty<(OutputPlug, InputPlug)>());
 
         Assert.IsEmpty(graph.Validate());
 

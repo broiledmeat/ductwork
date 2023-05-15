@@ -9,7 +9,6 @@ using ductwork.Resources;
 using ductwork.TaskRunners;
 using NLog;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
 public class InvalidExecutor : IExecutor

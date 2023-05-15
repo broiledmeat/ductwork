@@ -16,7 +16,6 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
 public class ComponentHarness

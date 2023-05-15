@@ -5,7 +5,6 @@ using ductwork.Crates;
 using ductwork.Executors;
 using GlobExpressions;
 
-#nullable enable
 namespace ductwork.Components;
 
 public class SourcePathGlobMatchComponent : SingleInComponent

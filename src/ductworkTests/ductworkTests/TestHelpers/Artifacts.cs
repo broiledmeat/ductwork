@@ -1,6 +1,5 @@
 using ductwork.Artifacts;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
 public class ObjectArtifact : Artifact
@@ -9,6 +8,6 @@ public class ObjectArtifact : Artifact
     {
         Object = obj;
     }
-    
+
     public object Object { get; }
 }

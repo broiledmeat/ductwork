@@ -9,7 +9,6 @@ using ductwork.Crates;
 using ductworkTests.TestHelpers;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Components;
 
 public class RootSourcePathIteratorComponentTests

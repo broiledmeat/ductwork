@@ -4,7 +4,6 @@ using System.Threading;
 using ductwork.Artifacts;
 using NUnit.Framework;
 
-#nullable enable
 namespace ductworkTests.Artifacts;
 
 public class SourceFileArtifactTests

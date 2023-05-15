@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using ductwork.Crates;
 using ductwork.Executors;
 
-#nullable enable
 namespace ductwork.Components;
 
 public class InputAwaiterComponent : SingleInSingleOutComponent

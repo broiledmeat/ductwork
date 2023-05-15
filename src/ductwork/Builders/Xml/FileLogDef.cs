@@ -5,7 +5,6 @@ using System.Xml;
 using System.Xml.Schema;
 using NLog;
 
-#nullable enable
 namespace ductwork.Builders.Xml;
 
 public class FileLogDef : NodeBackedDef

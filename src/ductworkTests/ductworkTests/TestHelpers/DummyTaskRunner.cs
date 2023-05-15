@@ -3,10 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using ductwork.TaskRunners;
 
-#nullable enable
 namespace ductworkTests.TestHelpers;
 
-class DummyTaskRunner : TaskRunner
+internal class DummyTaskRunner : TaskRunner
 {
     public override Task RunAsync(Func<Task> func, CancellationToken token)
     {

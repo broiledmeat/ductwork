@@ -6,15 +6,14 @@ using ductwork.Resources;
 using Scriban;
 using Scriban.Syntax;
 
-#nullable enable
 namespace ductworkScriban.Components;
 
 public class TemplateParserComponent : InputAwaiterComponent
 {
     private const string SetContextName = "set_context";
-    
+
     public Setting<string> SourceRoot = string.Empty;
-    
+
     protected override async Task ExecuteIn(IExecutor executor, ICrate crate, CancellationToken token)
     {
         if (crate.Get<ISourcePathArtifact>() is not { } sourceFilePathArtifact)

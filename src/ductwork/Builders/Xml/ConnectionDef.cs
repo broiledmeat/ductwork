@@ -4,7 +4,6 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 
-#nullable enable
 namespace ductwork.Builders.Xml;
 
 public class ConnectionDef : NodeBackedDef

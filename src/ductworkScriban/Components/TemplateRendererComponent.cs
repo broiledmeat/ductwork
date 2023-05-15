@@ -5,7 +5,6 @@ using ductwork.Executors;
 using ductwork.Resources;
 using ductworkScriban.Artifacts;
 
-#nullable enable
 namespace ductworkScriban.Components;
 
 public class TemplateRendererComponent : SingleInSingleOutComponent
