@@ -7,7 +7,7 @@ using GlobExpressions;
 
 namespace ductwork.Components;
 
-public class SourcePathGlobMatchComponent : SingleInComponent
+public record SourcePathGlobMatchComponent : SingleInComponent
 {
     public readonly OutputPlug True = new();
     public readonly OutputPlug False = new();

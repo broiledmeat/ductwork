@@ -7,15 +7,11 @@ using NLog;
 
 namespace ductwork.Builders.Xml;
 
-public class FileLogDef : NodeBackedDef
+public record FileLogDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string PathAttr = "path";
     private const string MinAttr = "min";
     private const string MaxAttr = "max";
-
-    public FileLogDef(XmlNode node) : base(node)
-    {
-    }
 
     public string FilePath => Path.GetFullPath(XmlBuilder.GetAttribute(Node, PathAttr));
 

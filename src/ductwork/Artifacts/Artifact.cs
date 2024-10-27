@@ -1,5 +1,3 @@
 namespace ductwork.Artifacts;
 
-public abstract class Artifact : IArtifact
-{
-}
+public abstract record Artifact : IArtifact;

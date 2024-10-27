@@ -6,7 +6,7 @@ using ductwork.Executors;
 
 namespace ductworkTests.TestHelpers;
 
-public class AdderComponent : Component
+public record AdderComponent : Component
 {
     public readonly InputPlug InX = new();
     public readonly InputPlug InY = new();

@@ -6,14 +6,14 @@ using ductwork.Executors;
 
 namespace ductwork.Components;
 
-public abstract class Component : IComponent
+public abstract record Component : IComponent
 {
     public string DisplayName { get; set; } = Guid.NewGuid().ToString();
 
     public abstract Task Execute(IExecutor executor, CancellationToken token);
 }
 
-public abstract class SingleInComponent : Component
+public abstract record SingleInComponent : Component
 {
     private const int InputWaitMs = 50;
 
@@ -49,12 +49,12 @@ public abstract class SingleInComponent : Component
     }
 }
 
-public abstract class SingleInSingleOutComponent : SingleInComponent
+public abstract record SingleInSingleOutComponent : SingleInComponent
 {
     public readonly OutputPlug Out = new();
 }
 
-public abstract class SingleOutComponent : Component
+public abstract record SingleOutComponent : Component
 {
     public readonly OutputPlug Out = new();
 }

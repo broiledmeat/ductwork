@@ -8,10 +8,10 @@ using ductwork.Executors;
 
 namespace ductworkTests.TestHelpers;
 
-public class ReceiverComponent : SingleInComponent
+public record ReceiverComponent : SingleInComponent
 {
     private readonly object _lock = new();
-    private readonly List<object> _values = new();
+    private readonly List<object> _values = [];
 
     public ReceiverComponent()
     {

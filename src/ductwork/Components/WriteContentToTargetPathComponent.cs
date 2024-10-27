@@ -9,7 +9,7 @@ using Force.Crc32;
 
 namespace ductwork.Components;
 
-public class WriteContentToTargetPathComponent : SingleInComponent
+public record WriteContentToTargetPathComponent : SingleInComponent
 {
     protected override async Task ExecuteIn(IExecutor executor, ICrate crate, CancellationToken token)
     {

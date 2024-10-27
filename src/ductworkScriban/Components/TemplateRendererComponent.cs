@@ -7,7 +7,7 @@ using ductworkScriban.Artifacts;
 
 namespace ductworkScriban.Components;
 
-public class TemplateRendererComponent : SingleInSingleOutComponent
+public record TemplateRendererComponent : SingleInSingleOutComponent
 {
     public Setting<string> SourceRoot = string.Empty;
 

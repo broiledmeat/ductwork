@@ -4,14 +4,9 @@ using System.Xml;
 
 namespace ductwork.Builders.Xml;
 
-public abstract class NodeBackedDef
+public abstract record NodeBackedDef(XmlNode Node)
 {
-    public readonly XmlNode Node;
-
-    public NodeBackedDef(XmlNode node)
-    {
-        Node = node;
-    }
+    public readonly XmlNode Node = Node;
 
     public abstract IEnumerable<Exception> Validate();
 }

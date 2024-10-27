@@ -6,7 +6,7 @@ using ductwork.Executors;
 
 namespace ductworkTests.TestHelpers;
 
-public class SenderComponent : Component
+public record SenderComponent : Component
 {
     public readonly OutputPlug Out = new();
 

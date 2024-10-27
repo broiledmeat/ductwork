@@ -6,14 +6,10 @@ using System.Xml.Schema;
 
 namespace ductwork.Builders.Xml;
 
-public class ComponentDef : NodeBackedDef
+public record ComponentDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string NameAttr = "name";
     private const string TypeNameAttr = "type";
-
-    public ComponentDef(XmlNode node) : base(node)
-    {
-    }
 
     public string Name => XmlBuilder.GetAttribute(Node, NameAttr);
     public string TypeName => XmlBuilder.GetAttribute(Node, TypeNameAttr);
@@ -37,13 +33,9 @@ public class ComponentDef : NodeBackedDef
     }
 }
 
-public class ComponentSettingDef : NodeBackedDef
+public record ComponentSettingDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string NameAttr = "name";
-
-    public ComponentSettingDef(XmlNode node) : base(node)
-    {
-    }
 
     public string Name => XmlBuilder.GetAttribute(Node, NameAttr);
     public string RawValue => Node.InnerText;

@@ -7,7 +7,7 @@ using ductwork.Executors;
 
 namespace ductworkTests.TestHelpers;
 
-public class DummyComponent : Component
+public record DummyComponent : Component
 {
     public readonly OutputPlug Out = new();
     public readonly InputPlug In = new();

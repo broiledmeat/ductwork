@@ -7,7 +7,7 @@ using ductwork.Executors;
 
 namespace ductwork.Components;
 
-public class TransformSourcePathToTargetPathComponent : SingleInSingleOutComponent
+public record TransformSourcePathToTargetPathComponent : SingleInSingleOutComponent
 {
     public Setting<string> SourceRoot = string.Empty;
     public Setting<string> TargetRoot = string.Empty;

@@ -5,13 +5,9 @@ using System.Xml;
 
 namespace ductwork.Builders.Xml;
 
-public class ArrayItemDef : NodeBackedDef
+public record ArrayItemDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string TypeNameAttr = "type";
-
-    public ArrayItemDef(XmlNode node) : base(node)
-    {
-    }
 
     public string? TypeName => XmlBuilder.HasAttribute(Node, TypeNameAttr)
         ? XmlBuilder.GetAttribute(Node, TypeNameAttr)

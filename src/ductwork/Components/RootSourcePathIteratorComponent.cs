@@ -6,7 +6,7 @@ using ductwork.Executors;
 
 namespace ductwork.Components;
 
-public class RootSourcePathIteratorComponent : SingleOutComponent
+public record RootSourcePathIteratorComponent : SingleOutComponent
 {
     public Setting<string> SourceRoot = string.Empty;
     public Setting<bool> IsRecursive = true;

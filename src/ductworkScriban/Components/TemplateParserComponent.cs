@@ -8,7 +8,7 @@ using Scriban.Syntax;
 
 namespace ductworkScriban.Components;
 
-public class TemplateParserComponent : InputAwaiterComponent
+public record TemplateParserComponent : InputAwaiterComponent
 {
     private const string SetContextName = "set_context";
 

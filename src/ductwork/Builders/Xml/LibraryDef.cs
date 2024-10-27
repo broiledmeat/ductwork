@@ -6,13 +6,9 @@ using System.Xml.Schema;
 
 namespace ductwork.Builders.Xml;
 
-public class LibraryDef : NodeBackedDef
+public record LibraryDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string PathAttr = "path";
-
-    public LibraryDef(XmlNode node) : base(node)
-    {
-    }
 
     public string FilePath => Path.GetFullPath(XmlBuilder.GetAttribute(Node, PathAttr));
 

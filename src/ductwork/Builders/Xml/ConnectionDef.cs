@@ -6,16 +6,12 @@ using System.Xml.Schema;
 
 namespace ductwork.Builders.Xml;
 
-public class ConnectionDef : NodeBackedDef
+public record ConnectionDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string OutputAttr = "out";
     private const string InputAttr = "in";
     private const string DefaultOutputPlugName = "Out";
     private const string DefaultInputPlugName = "In";
-
-    public ConnectionDef(XmlNode node) : base(node)
-    {
-    }
 
     public string OutputComponentName => GetComponentName(OutputAttr);
     public string OutputPlugName => GetPlugName(OutputAttr) ?? DefaultOutputPlugName;

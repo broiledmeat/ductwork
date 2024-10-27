@@ -6,7 +6,7 @@ using ductwork.Executors;
 
 namespace ductworkTests.TestHelpers;
 
-public class ArrayGenericComponent<T> : Component
+public record ArrayGenericComponent<T> : Component
 {
     public Setting<T[]> Values;
 

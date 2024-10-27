@@ -9,7 +9,7 @@ using Scriban.Runtime;
 
 namespace ductworkScriban.Artifacts;
 
-public class TemplateSourceFileArtifact : Artifact, ISourcePathArtifact
+public record TemplateSourceFileArtifact : Artifact, ISourcePathArtifact
 {
     private const string SetContextName = "set_context";
     private const string GetContextsName = "get_contexts";

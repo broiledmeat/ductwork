@@ -7,7 +7,7 @@ using ductwork.Executors;
 
 namespace ductwork.Components;
 
-public class InputAwaiterComponent : SingleInSingleOutComponent
+public record InputAwaiterComponent : SingleInSingleOutComponent
 {
     private readonly ConcurrentBag<ICrate> _crates = new();
 

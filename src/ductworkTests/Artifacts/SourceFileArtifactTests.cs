@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace ductworkTests.Artifacts;
 
-public class SourceFileArtifactTests
+public record SourceFileArtifactTests
 {
     [Test]
     public void GetContentEqualsSourceContent()
