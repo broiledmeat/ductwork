@@ -34,7 +34,7 @@ public class RootSourcePathIteratorComponentTests
 
         Directory.Delete(tempDir, true);
 
-        var filePaths = outputs.GetValueOrDefault(component.Out, Array.Empty<ICrate>())
+        var filePaths = outputs.GetValueOrDefault(component.Out, [])
             .Select(crate => crate.Get<ISourcePathArtifact>())
             .NotNull()
             .Select(artifact => artifact.SourcePath)

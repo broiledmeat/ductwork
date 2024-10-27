@@ -15,6 +15,6 @@ public record ArrayItemDef(XmlNode Node) : NodeBackedDef(Node)
 
     public override IEnumerable<Exception> Validate()
     {
-        return Enumerable.Empty<Exception>();
+        return [];
     }
 }

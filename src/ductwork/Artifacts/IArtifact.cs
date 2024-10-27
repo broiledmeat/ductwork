@@ -3,9 +3,7 @@ using System.Threading.Tasks;
 
 namespace ductwork.Artifacts;
 
-public interface IArtifact
-{
-}
+public interface IArtifact;
 
 public interface IContentArtifact : IArtifact
 {

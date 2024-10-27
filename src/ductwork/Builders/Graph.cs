@@ -8,24 +8,16 @@ using NLog;
 
 namespace ductwork.Builders;
 
-public class Graph
+public class Graph(
+    string displayName,
+    Logger logger,
+    IEnumerable<Component> components,
+    IEnumerable<(OutputPlug, InputPlug)> connections)
 {
-    public readonly string DisplayName;
-    public readonly Logger Logger;
-    public readonly ReadOnlyCollection<Component> Components;
-    public readonly ReadOnlyCollection<(OutputPlug, InputPlug)> Connections;
-
-    public Graph(
-        string displayName,
-        Logger logger,
-        IEnumerable<Component> components,
-        IEnumerable<(OutputPlug, InputPlug)> connections)
-    {
-        DisplayName = displayName;
-        Logger = logger;
-        Components = new ReadOnlyCollection<Component>(components.ToArray());
-        Connections = new ReadOnlyCollection<(OutputPlug, InputPlug)>(connections.ToArray());
-    }
+    public readonly string DisplayName = displayName;
+    public readonly Logger Logger = logger;
+    public readonly ReadOnlyCollection<Component> Components = new(components.ToArray());
+    public readonly ReadOnlyCollection<(OutputPlug, InputPlug)> Connections = new(connections.ToArray());
 
     public IEnumerable<Exception> Validate()
     {
@@ -64,25 +56,23 @@ public class Graph
 
     public T GetExecutor<T>() where T : IExecutor
     {
-        var constructor = typeof(T).GetConstructor(new[]
-        {
+        var constructor = typeof(T).GetConstructor([
             typeof(string),
             typeof(Logger),
             typeof(ICollection<Component>),
             typeof(ICollection<(OutputPlug, InputPlug)>)
-        });
+        ]);
 
         if (constructor == null)
         {
             throw new ArgumentException($"{typeof(T)} requires a default {nameof(IExecutor)} constructor.");
         }
 
-        return (T) constructor.Invoke(new object[]
-        {
+        return (T) constructor.Invoke([
             DisplayName,
             Logger,
             Components,
             Connections
-        });
+        ]);
     }
 }

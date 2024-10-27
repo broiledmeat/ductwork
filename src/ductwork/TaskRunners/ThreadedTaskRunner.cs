@@ -11,7 +11,7 @@ namespace ductwork.TaskRunners;
 public class ThreadedTaskRunner : TaskRunner
 {
     private readonly SemaphoreSlim _executionSemaphore;
-    private readonly ConcurrentBag<Task> _tasks = new();
+    private readonly ConcurrentBag<Task> _tasks = [];
     
     public ThreadedTaskRunner(int maximum = -1)
     {

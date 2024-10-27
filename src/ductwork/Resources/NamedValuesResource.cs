@@ -7,7 +7,7 @@ namespace ductwork.Resources;
 public class NamedValuesResource : IResource
 {
     private readonly object _lock = new();
-    private readonly HashSet<NamedValue> _values = new();
+    private readonly HashSet<NamedValue> _values = [];
 
     public NamedValue[] Get(string name)
     {

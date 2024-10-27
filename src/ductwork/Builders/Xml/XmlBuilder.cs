@@ -18,13 +18,13 @@ public class XmlBuilder : IBuilder
 {
     public record ValueConverter(Type Type, Func<XmlNode, object> Convert);
 
-    private static readonly HashSet<(Type, string)> ValueTypeNames = new()
-    {
+    private static readonly HashSet<(Type, string)> ValueTypeNames =
+    [
         (typeof(string), "string"),
         (typeof(int), "int"),
         (typeof(float), "float"),
-        (typeof(bool), "bool"),
-    };
+        (typeof(bool), "bool")
+    ];
 
     private static readonly Dictionary<Type, ValueConverter> ValueConverters = new()
     {
@@ -212,8 +212,8 @@ public class XmlBuilder : IBuilder
             componentType = componentType.MakeGenericType(subType);
         }
 
-        var componentConstructor = componentType.GetConstructor(Array.Empty<Type>())!;
-        var component = (Component) componentConstructor.Invoke(Array.Empty<object>());
+        var componentConstructor = componentType.GetConstructor([])!;
+        var component = (Component)componentConstructor.Invoke([]);
         component.DisplayName = componentDef.Name;
 
         componentDef.Settings.ForEach(settingDef => ProcessSettingDef(component, settingDef));

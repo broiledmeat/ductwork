@@ -84,18 +84,11 @@ public record TemplateSourceFileArtifact : Artifact, ISourcePathArtifact
         }
     }
 
-    private class TemplateLoader : ITemplateLoader
+    private class TemplateLoader(string TemplateRoot) : ITemplateLoader
     {
-        private readonly string _templateRoot;
-
-        public TemplateLoader(string templateRoot)
-        {
-            _templateRoot = templateRoot;
-        }
-
         public string GetPath(TemplateContext context, SourceSpan callerSpan, string templateName)
         {
-            return Path.Join(_templateRoot, templateName);
+            return Path.Join(TemplateRoot, templateName);
         }
 
         public string Load(TemplateContext context, SourceSpan callerSpan, string templatePath)

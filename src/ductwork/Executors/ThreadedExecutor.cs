@@ -20,11 +20,11 @@ public class ThreadedExecutor : IExecutor
     private readonly HashSet<(object, FieldInfo)> _fieldInfos;
     private readonly HashSet<(OutputPlug, InputPlug)> _connections;
     private readonly Dictionary<InputPlug, AsyncQueue<object?>> _inputQueues = new();
-    private readonly HashSet<InputPlug> _inputsCompleted = new();
-    private readonly HashSet<OutputPlug> _outputsCompleted = new();
+    private readonly HashSet<InputPlug> _inputsCompleted = [];
+    private readonly HashSet<OutputPlug> _outputsCompleted = [];
     private readonly object _componentLock = new();
     private readonly object _resourceLock = new();
-    private readonly HashSet<IResource> _resources = new();
+    private readonly HashSet<IResource> _resources = [];
     private ThreadedTaskRunner? _runner;
 
     public int MaximumParallelRunnerTasks = -1;
@@ -221,10 +221,10 @@ public class ThreadedExecutor : IExecutor
                 return (T) resource;
             }
 
-            var constructor = typeof(T).GetConstructor(Array.Empty<Type>())
+            var constructor = typeof(T).GetConstructor([])
                               ?? throw new Exception(
                                   $"Resource type `${typeof(T).Name}` does not have an empty constructor");
-            resource = (T) constructor.Invoke(Array.Empty<object>());
+            resource = (T) constructor.Invoke([]);
             _resources.Add(resource);
 
             return (T) resource;

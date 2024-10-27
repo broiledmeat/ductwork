@@ -13,36 +13,19 @@ using NLog;
 
 namespace ductworkTests.TestHelpers;
 
-public class DummyExecutor : IExecutor
+public class DummyExecutor(
+    string displayName,
+    Logger logger,
+    ICollection<Component> components,
+    ICollection<(OutputPlug, InputPlug)> connections)
+    : IExecutor
 {
-    public readonly ICollection<Component> Components;
-    public readonly ICollection<(OutputPlug, InputPlug)> Connections;
+    public readonly ICollection<Component> Components = components;
+    public readonly ICollection<(OutputPlug, InputPlug)> Connections = connections;
 
-    public DummyExecutor(
-        string displayName,
-        Logger logger,
-        ICollection<Component> components,
-        ICollection<(OutputPlug, InputPlug)> connections)
-    {
-        Components = components;
-        Connections = connections;
-        DisplayName = displayName;
-        Log = logger;
-        Runner = new DummyTaskRunner();
-    }
-
-    public DummyExecutor() :
-        this(
-            "Dummy",
-            new NullLogger(new LogFactory()),
-            Array.Empty<Component>(),
-            Array.Empty<(OutputPlug, InputPlug)>())
-    {
-    }
-
-    public string DisplayName { get; }
-    public Logger Log { get; }
-    public TaskRunner Runner { get; }
+    public string DisplayName { get; } = displayName;
+    public Logger Log { get; } = logger;
+    public TaskRunner Runner { get; } = new DummyTaskRunner();
 
     public Task Execute(CancellationToken token)
     {

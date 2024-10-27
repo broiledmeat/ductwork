@@ -17,11 +17,7 @@ public class GraphTests
     [Test]
     public void GetExecutorCreatesValidExecutor()
     {
-        var graph = new Graph(
-            Name,
-            Logger,
-            Array.Empty<Component>(),
-            Array.Empty<(OutputPlug, InputPlug)>());
+        var graph = new Graph(Name, Logger, [], []);
 
         Assert.That(graph.Validate(), Is.Empty);
 
@@ -31,11 +27,7 @@ public class GraphTests
     [Test]
     public void GetExecutorAssertsOnInvalidExecutor()
     {
-        var graph = new Graph(
-            Name,
-            Logger,
-            Array.Empty<Component>(),
-            Array.Empty<(OutputPlug, InputPlug)>());
+        var graph = new Graph(Name, Logger, [], []);
 
         Assert.That(graph.Validate(), Is.Empty);
 

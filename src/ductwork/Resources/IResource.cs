@@ -1,5 +1,3 @@
 namespace ductwork.Resources;
 
-public interface IResource
-{
-}
+public interface IResource;

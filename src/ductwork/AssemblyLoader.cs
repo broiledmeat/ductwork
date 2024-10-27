@@ -12,16 +12,9 @@ public static class AssemblyLoader
         return new LoaderContext(path).Load();
     }
 
-    private class LoaderContext
+    private class LoaderContext(string AssemblyPath)
     {
-        private readonly string _path;
-        private readonly string _directory;
-
-        public LoaderContext(string path)
-        {
-            _path = path;
-            _directory = Path.GetDirectoryName(path) ?? "./";
-        }
+        private readonly string _directory = Path.GetDirectoryName(AssemblyPath) ?? "./";
 
         public Assembly Load()
         {
@@ -29,7 +22,7 @@ public static class AssemblyLoader
 
             try
             {
-                var assembly = Assembly.LoadFile(_path);
+                var assembly = Assembly.LoadFile(AssemblyPath);
                 // Resolve any dependencies by forcing types to load.
                 assembly.GetTypes();
                 return assembly;
