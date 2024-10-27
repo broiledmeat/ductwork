@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Schema;
 using ductwork.Artifacts;
@@ -11,12 +10,11 @@ using ductwork.Components;
 using NLog;
 using NLog.Targets;
 
-#nullable enable
 namespace ductwork.Builders.Xml;
 
 public class XmlBuilder : IBuilder
 {
-    public record ValueConverter(Type Type, Func<XmlNode, object> Convert);
+    private record ValueConverter(Type Type, Func<XmlNode, object> Convert);
 
     private static readonly HashSet<(Type, string)> ValueTypeNames =
     [
@@ -28,16 +26,16 @@ public class XmlBuilder : IBuilder
 
     private static readonly Dictionary<Type, ValueConverter> ValueConverters = new()
     {
-        {typeof(object), new ValueConverter(typeof(string), node => node.InnerText.Trim())},
-        {typeof(string), new ValueConverter(typeof(string), node => node.InnerText.Trim())},
-        {typeof(int), new ValueConverter(typeof(int), node => Convert.ToInt32(node.InnerText.Trim()))},
-        {typeof(float), new ValueConverter(typeof(float), node => Convert.ToSingle(node.InnerText.Trim()))},
-        {typeof(bool), new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim()))}
+        { typeof(object), new ValueConverter(typeof(string), node => node.InnerText.Trim()) },
+        { typeof(string), new ValueConverter(typeof(string), node => node.InnerText.Trim()) },
+        { typeof(int), new ValueConverter(typeof(int), node => Convert.ToInt32(node.InnerText.Trim())) },
+        { typeof(float), new ValueConverter(typeof(float), node => Convert.ToSingle(node.InnerText.Trim())) },
+        { typeof(bool), new ValueConverter(typeof(bool), node => Convert.ToBoolean(node.InnerText.Trim())) }
     };
 
     private XmlDocument _document = new();
     private Logger? _logger;
-    private string _defaultDisplayName = "graph";
+    private const string DefaultDisplayName = "graph";
 
     private XmlBuilder()
     {
@@ -47,7 +45,7 @@ public class XmlBuilder : IBuilder
 
     public string DisplayName => HasAttribute(_document, "name")
         ? GetAttribute(_document, "name")
-        : _defaultDisplayName;
+        : DefaultDisplayName;
 
     private IEnumerable<LibraryDef> LibraryDefs => _document
         .SelectXPath("/graph/lib")
@@ -187,15 +185,14 @@ public class XmlBuilder : IBuilder
     {
         var document = new XmlDocument();
         document.Load(Path.GetFullPath(xmlFilepath));
-        return new XmlBuilder {_document = document,};
-    }
+        return new XmlBuilder { _document = document, };
     }
 
     public static XmlBuilder LoadString(string xml)
     {
         var document = new XmlDocument();
         document.LoadXml(xml);
-        return new XmlBuilder {_document = document};
+        return new XmlBuilder { _document = document };
     }
 
     private static Component CreateComponent(
@@ -224,7 +221,7 @@ public class XmlBuilder : IBuilder
     private static void ProcessSettingDef(Component component, ComponentSettingDef settingDef)
     {
         var settingFieldInfo = component.GetType().GetField(settingDef.Name)!;
-        var settingField = (ISetting) settingFieldInfo.GetValue(component)!;
+        var settingField = (ISetting)settingFieldInfo.GetValue(component)!;
 
         object settingValue;
 
@@ -252,12 +249,12 @@ public class XmlBuilder : IBuilder
         }
 
         var settingType = typeof(Setting<>).MakeGenericType(settingField.Type);
-        var setting = (ISetting) Activator.CreateInstance(settingType, settingValue)!;
+        var setting = (ISetting)Activator.CreateInstance(settingType, settingValue)!;
 
         settingFieldInfo.SetValue(component, setting);
     }
 
-    public static ValueConverter GetValueConverter(Type type)
+    private static ValueConverter GetValueConverter(Type type)
     {
         var converter = ValueConverters
             .Where(pair => pair.Key == type)
@@ -272,7 +269,7 @@ public class XmlBuilder : IBuilder
         return converter;
     }
 
-    public static ValueConverter GetValueConverter(string? name)
+    private static ValueConverter GetValueConverter(string? name)
     {
         var type = ValueTypeNames.Where(pair => pair.Item2 == name).Select(pair => pair.Item1).FirstOrDefault();
 
@@ -290,12 +287,12 @@ public class XmlBuilder : IBuilder
         return split == -1 ? (name, null) : (name[..split], name[(split + 1)..]);
     }
 
-    internal static bool HasAttribute(XmlNode node, string name)
+    public static bool HasAttribute(XmlNode node, string name)
     {
         return node.Attributes?[name]?.Value != null;
     }
 
-    internal static string GetAttribute(XmlNode node, string name)
+    public static string GetAttribute(XmlNode node, string name)
     {
         return node.Attributes?[name]?.Value ??
                throw new XmlSchemaException($"Node must have a \"{name}\" attribute.");
@@ -310,7 +307,7 @@ public class XmlBuilder : IBuilder
             .ToArray();
     }
 
-    public static string GetTypeReferenceName(Type type)
+    private static string GetTypeReferenceName(Type type)
     {
         return type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name;
     }

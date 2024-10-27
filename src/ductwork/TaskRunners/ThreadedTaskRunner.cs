@@ -55,6 +55,7 @@ public class ThreadedTaskRunner : TaskRunner
     public override void Dispose()
     {
         base.Dispose();
+        GC.SuppressFinalize(this);
         WaitAsync(CancellationToken.None).Wait();
     }
 }

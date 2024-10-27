@@ -27,8 +27,6 @@ public class ThreadedExecutor : IExecutor
     private readonly HashSet<IResource> _resources = [];
     private ThreadedTaskRunner? _runner;
 
-    public int MaximumParallelRunnerTasks = -1;
-
     public ThreadedExecutor(
         string displayName,
         Logger logger,
@@ -73,7 +71,7 @@ public class ThreadedExecutor : IExecutor
 
     public Logger Log { get; }
 
-    public TaskRunner Runner => _runner ??= new ThreadedTaskRunner(MaximumParallelRunnerTasks);
+    public TaskRunner Runner => _runner ??= new ThreadedTaskRunner();
 
     public async Task Execute(CancellationToken token)
     {

@@ -9,8 +9,8 @@ public static class Logging
     public const string DefaultLogFormat = "${longdate} ${level:uppercase=true}: ${message} ${exception}";
     private const string LogNamePrefix = "ductwork_";
 
-    private static bool _isInitialized = false;
-    private static readonly object InitializeLock = new object();
+    private static bool _isInitialized;
+    private static readonly object InitializeLock = new();
 
     private static void Initialize()
     {

@@ -20,11 +20,6 @@ public static class ExtensionMethods
         return enumerable.Where(item => item != null)!;
     }
 
-    public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> enumerable) where T : struct
-    {
-        return enumerable.Where(e => e != null).Select(e => e!.Value);
-    }
-
     public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
     {
         foreach (var e in enumerable)

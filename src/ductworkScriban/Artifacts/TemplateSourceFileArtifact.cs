@@ -65,7 +65,7 @@ public record TemplateSourceFileArtifact : Artifact, ISourcePathArtifact
     {
     }
 
-    private IEnumerable<Dictionary<string, object?>> GetContextsFunc(
+    private static IEnumerable<Dictionary<string, object?>> GetContextsFunc(
         NamedValuesResource resource,
         string name,
         object value)

@@ -12,5 +12,6 @@ public abstract class TaskRunner : IDisposable
     
     public virtual void Dispose()
     {
+        GC.SuppressFinalize(this);
     }
 }
