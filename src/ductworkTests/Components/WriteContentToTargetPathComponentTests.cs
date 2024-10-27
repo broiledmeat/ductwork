@@ -30,6 +30,6 @@ public class WriteContentToTargetPathComponentTests
 
         var targetContent = File.ReadAllBytes(targetPath);
 
-        Assert.AreEqual(sourceContent, targetContent);
+        Assert.That(sourceContent, Is.EqualTo(targetContent));
     }
 }

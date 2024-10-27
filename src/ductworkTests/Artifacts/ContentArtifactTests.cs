@@ -15,6 +15,6 @@ public class ContentArtifactTests
         var artifact = new ContentArtifact(sourceContent);
         var artifactContent = artifact.GetContent(CancellationToken.None).Result;
 
-        Assert.AreEqual(sourceContent, artifactContent);
+        Assert.That(sourceContent, Is.EqualTo(artifactContent));
     }
 }

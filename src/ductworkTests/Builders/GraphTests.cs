@@ -23,7 +23,7 @@ public class GraphTests
             Array.Empty<Component>(),
             Array.Empty<(OutputPlug, InputPlug)>());
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         graph.GetExecutor<DummyExecutor>();
     }
@@ -37,7 +37,7 @@ public class GraphTests
             Array.Empty<Component>(),
             Array.Empty<(OutputPlug, InputPlug)>());
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         Assert.Catch<ArgumentException>(() => graph.GetExecutor<InvalidExecutor>());
     }
@@ -47,12 +47,12 @@ public class GraphTests
     {
         var dummyA = new DummyComponent();
         var dummyB = new DummyComponent();
-        var components = new Component[] {dummyA, dummyB};
-        var connections = new (OutputPlug, InputPlug)[] {(dummyA.Out, dummyB.In)};
+        var components = new Component[] { dummyA, dummyB };
+        var connections = new (OutputPlug, InputPlug)[] { (dummyA.Out, dummyB.In) };
 
         var graph = new Graph(Name, Logger, components, connections);
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         var executor = graph.GetExecutor<DummyExecutor>();
 
@@ -67,14 +67,14 @@ public class GraphTests
 
         var dummyA = new DummyComponent();
         var dummyB = new DummyComponent();
-        var components = new Component[] {dummyB};
-        var connections = new (OutputPlug, InputPlug)[] {(dummyA.Out, dummyB.In)};
+        var components = new Component[] { dummyB };
+        var connections = new (OutputPlug, InputPlug)[] { (dummyA.Out, dummyB.In) };
 
         var graph = new Graph(Name, Logger, components, connections);
         var exceptions = graph.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -84,13 +84,13 @@ public class GraphTests
 
         var dummyA = new DummyComponent();
         var dummyB = new DummyComponent();
-        var components = new Component[] {dummyA};
-        var connections = new (OutputPlug, InputPlug)[] {(dummyA.Out, dummyB.In)};
+        var components = new Component[] { dummyA };
+        var connections = new (OutputPlug, InputPlug)[] { (dummyA.Out, dummyB.In) };
 
         var graph = new Graph(Name, Logger, components, connections);
         var exceptions = graph.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 }

@@ -24,6 +24,6 @@ public class SourceFileArtifactTests
 
         Directory.Delete(root, true);
 
-        Assert.AreEqual(sourceContent, artifactContent);
+        Assert.That(sourceContent, Is.EqualTo(artifactContent));
     }
 }

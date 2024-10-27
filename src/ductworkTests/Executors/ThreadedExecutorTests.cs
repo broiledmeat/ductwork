@@ -27,12 +27,12 @@ public class ThreadedExecutorTests
         var connections = new (OutputPlug, InputPlug)[] {(sender.Out, receiverA.In), (sender.Out, receiverB.In)};
         var graph = new Graph(Name, Logger, components, connections);
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
 
-        Assert.IsTrue(expectedValues.All(receiverA.Values.Contains));
-        Assert.IsTrue(expectedValues.All(receiverB.Values.Contains));
+        Assert.That(expectedValues.All(receiverA.Values.Contains));
+        Assert.That(expectedValues.All(receiverB.Values.Contains));
     }
 
     [Test]
@@ -55,13 +55,13 @@ public class ThreadedExecutorTests
         };
         var graph = new Graph(Name, Logger, components, connections);
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
 
-        Assert.IsTrue(expectedValuesA.All(receiver.Values.Contains));
-        Assert.IsTrue(expectedValuesB.All(receiver.Values.Contains));
-        Assert.IsTrue(expectedValuesC.All(receiver.Values.Contains));
+        Assert.That(expectedValuesA.All(receiver.Values.Contains));
+        Assert.That(expectedValuesB.All(receiver.Values.Contains));
+        Assert.That(expectedValuesC.All(receiver.Values.Contains));
     }
 
     [Test]
@@ -83,11 +83,11 @@ public class ThreadedExecutorTests
         };
         var graph = new Graph(Name, Logger, components, connections);
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
 
-        Assert.AreEqual(expectedValueA + expectedValueB, receiver.Values.FirstOrDefault());
+        Assert.That(expectedValueA + expectedValueB, Is.EqualTo(receiver.Values.FirstOrDefault()));
     }
 
     [Test]
@@ -99,7 +99,7 @@ public class ThreadedExecutorTests
         var connections = new (OutputPlug, InputPlug)[] { };
         var graph = new Graph(Name, Logger, components, connections);
 
-        Assert.IsEmpty(graph.Validate());
+        Assert.That(graph.Validate(), Is.Empty);
 
         graph.GetExecutor<ThreadedExecutor>().Execute(CancellationToken.None).Wait();
     }

@@ -22,15 +22,15 @@ public class XmlBuilderTests
         var xml = GetGraphXml(@$"<component name=""{expectedName}"" type=""{expectedType.Name}""/>");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
 
         var component = graph.Components.FirstOrDefault();
 
-        Assert.NotNull(component);
-        Assert.AreEqual(expectedName, component?.DisplayName);
-        Assert.AreEqual(expectedType, component?.GetType());
+        Assert.That(component, Is.Not.Null);
+        Assert.That(expectedName, Is.EqualTo(component?.DisplayName));
+        Assert.That(expectedType, Is.EqualTo(component?.GetType()));
     }
 
     [Test]
@@ -44,12 +44,12 @@ public class XmlBuilderTests
 </component>");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
         var component = graph.Components.OfType<DummyComponent>().First();
 
-        Assert.AreEqual(expectedString, component.DummyString.Value);
+        Assert.That(expectedString, Is.EqualTo(component.DummyString.Value));
     }
 
     [Test]
@@ -63,12 +63,12 @@ public class XmlBuilderTests
 </component>");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
         var component = graph.Components.OfType<DummyComponent>().First();
 
-        Assert.AreEqual(expectedInt, component.DummyInt.Value);
+        Assert.That(expectedInt, Is.EqualTo(component.DummyInt.Value));
     }
 
     [Test]
@@ -85,14 +85,14 @@ public class XmlBuilderTests
 </component>");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
         var component = graph.Components.OfType<DummyComponent>().First();
 
-        Assert.AreEqual(expectedIntArray.Length, component.DummyIntArray.Value.Length);
-        Assert.AreEqual(expectedIntArray[0], component.DummyIntArray.Value[0]);
-        Assert.AreEqual(expectedIntArray[1], component.DummyIntArray.Value[1]);
+        Assert.That(expectedIntArray.Length, Is.EqualTo(component.DummyIntArray.Value.Length));
+        Assert.That(expectedIntArray[0], Is.EqualTo(component.DummyIntArray.Value[0]));
+        Assert.That(expectedIntArray[1], Is.EqualTo(component.DummyIntArray.Value[1]));
     }
 
     [Test]
@@ -110,15 +110,15 @@ public class XmlBuilderTests
 </component>");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
         var component = graph.Components.OfType<DummyComponent>().First();
 
-        Assert.AreEqual(expectedObjectArray.Length, component.DummyObjectArray.Value.Length);
-        Assert.AreEqual(expectedObjectArray[0], component.DummyObjectArray.Value[0]);
-        Assert.AreEqual(expectedObjectArray[1], component.DummyObjectArray.Value[1]);
-        Assert.AreEqual(expectedObjectArray[2], component.DummyObjectArray.Value[2]);
+        Assert.That(expectedObjectArray.Length, Is.EqualTo(component.DummyObjectArray.Value.Length));
+        Assert.That(expectedObjectArray[0], Is.EqualTo(component.DummyObjectArray.Value[0]));
+        Assert.That(expectedObjectArray[1], Is.EqualTo(component.DummyObjectArray.Value[1]));
+        Assert.That(expectedObjectArray[2], Is.EqualTo(component.DummyObjectArray.Value[2]));
     }
 
     [Test]
@@ -131,7 +131,7 @@ public class XmlBuilderTests
 ");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
         var dummyA = graph.Components.OfType<DummyComponent>().First(c => c.DisplayName == "DummyA");
@@ -139,7 +139,7 @@ public class XmlBuilderTests
 
         var connection = graph.Connections.FirstOrDefault(c => c.Item1 == dummyA.Out && c.Item2 == dummyB.In);
 
-        Assert.NotNull(connection);
+        Assert.That(connection, Is.Not.Null);
     }
 
     [Test]
@@ -152,7 +152,7 @@ public class XmlBuilderTests
 ");
         var builder = XmlBuilder.LoadString(xml);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
 
@@ -160,7 +160,7 @@ public class XmlBuilderTests
         var dummyB = graph.Components.OfType<DummyComponent>().First(c => c.DisplayName == "DummyB");
         var connection = graph.Connections.FirstOrDefault(c => c.Item1 == dummyA.Out && c.Item2 == dummyB.In);
 
-        Assert.NotNull(connection);
+        Assert.That(connection, Is.Not.Null);
     }
 
     [Test]
@@ -175,8 +175,8 @@ public class XmlBuilderTests
         var builder = XmlBuilder.LoadString(xml);
         var exceptions = builder.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -188,8 +188,8 @@ public class XmlBuilderTests
         var builder = XmlBuilder.LoadString(xml);
         var exceptions = builder.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -201,8 +201,8 @@ public class XmlBuilderTests
         var builder = XmlBuilder.LoadString(xml);
         var exceptions = builder.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -214,8 +214,8 @@ public class XmlBuilderTests
         var builder = XmlBuilder.LoadString(xml);
         var exceptions = builder.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -230,8 +230,8 @@ public class XmlBuilderTests
         var builder = XmlBuilder.LoadString(xml);
         var exceptions = builder.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -246,8 +246,8 @@ public class XmlBuilderTests
         var builder = XmlBuilder.LoadString(xml);
         var exceptions = builder.Validate().ToArray();
 
-        Assert.AreEqual(1, exceptions.Length);
-        Assert.AreEqual(expectedMessage, exceptions[0].Message);
+        Assert.That(1, Is.EqualTo(exceptions.Length));
+        Assert.That(expectedMessage, Is.EqualTo(exceptions[0].Message));
     }
 
     [Test]
@@ -256,25 +256,25 @@ public class XmlBuilderTests
         const string graphPath = "./Resources/TestGraphReceivers.xml";
         var builder = XmlBuilder.LoadPath(graphPath);
 
-        Assert.IsEmpty(builder.Validate());
+        Assert.That(builder.Validate(), Is.Empty);
 
         var graph = builder.GetGraph();
 
-        Assert.AreEqual(4, graph.Components.Count);
-        Assert.AreEqual(2, graph.Components.OfType<SenderComponent>().Count());
-        Assert.AreEqual(2, graph.Components.OfType<ReceiverComponent>().Count());
+        Assert.That(4, Is.EqualTo(graph.Components.Count));
+        Assert.That(2, Is.EqualTo(graph.Components.OfType<SenderComponent>().Count()));
+        Assert.That(2, Is.EqualTo(graph.Components.OfType<ReceiverComponent>().Count()));
 
         var senderA = graph.Components.OfType<SenderComponent>().FirstOrDefault(c => c.DisplayName == "SenderA");
         var senderB = graph.Components.OfType<SenderComponent>().FirstOrDefault(c => c.DisplayName == "SenderB");
         var receiverA = graph.Components.OfType<ReceiverComponent>().FirstOrDefault(c => c.DisplayName == "ReceiverA");
         var receiverB = graph.Components.OfType<ReceiverComponent>().FirstOrDefault(c => c.DisplayName == "ReceiverB");
 
-        Assert.NotNull(senderA);
-        Assert.NotNull(senderB);
-        Assert.NotNull(receiverA);
-        Assert.NotNull(receiverB);
+        Assert.That(senderA, Is.Not.Null);
+        Assert.That(senderB, Is.Not.Null);
+        Assert.That(receiverA, Is.Not.Null);
+        Assert.That(receiverB, Is.Not.Null);
 
-        Assert.AreEqual(3, graph.Connections.Count);
+        Assert.That(3, Is.EqualTo(graph.Connections.Count));
 
         (OutputPlug, InputPlug)? FindConnection(OutputPlug outputPlug, InputPlug inputPlug)
         {
@@ -288,8 +288,8 @@ public class XmlBuilderTests
         var senderAToReceiverB = FindConnection(senderA!.Out, receiverB!.In);
         var senderBToReceiverB = FindConnection(senderB!.Out, receiverB!.In);
 
-        Assert.NotNull(senderAToReceiverA);
-        Assert.NotNull(senderAToReceiverB);
-        Assert.NotNull(senderBToReceiverB);
+        Assert.That(senderAToReceiverA, Is.Not.Null);
+        Assert.That(senderAToReceiverB, Is.Not.Null);
+        Assert.That(senderBToReceiverB, Is.Not.Null);
     }
 }
