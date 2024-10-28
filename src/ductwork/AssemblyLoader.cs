@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,14 +9,26 @@ namespace ductwork;
 
 public static class AssemblyLoader
 {
-    public static Assembly Load(string path)
+    public static Assembly Load(string path, IEnumerable<string>? searchPaths = null)
     {
-        return new LoaderContext(path).Load();
+        return new LoaderContext(path, searchPaths).Load();
     }
 
-    private class LoaderContext(string AssemblyPath)
+    private class LoaderContext
     {
-        private readonly string _directory = Path.GetDirectoryName(AssemblyPath) ?? "./";
+        private readonly string _assemblyPath;
+
+        public LoaderContext(string assemblyPath, IEnumerable<string>? searchRoots = null)
+        {
+            _assemblyPath = new[] { assemblyPath }
+                                .Concat(
+                                    (searchRoots ?? [])
+                                    .Select(searchRoot => Path.Combine(searchRoot, assemblyPath)))
+                                .Select(Path.GetFullPath)
+                                .Where(File.Exists)
+                                .FirstOrDefault()
+                            ?? assemblyPath;
+        }
 
         public Assembly Load()
         {
@@ -22,7 +36,7 @@ public static class AssemblyLoader
 
             try
             {
-                var assembly = Assembly.LoadFile(AssemblyPath);
+                var assembly = Assembly.LoadFile(_assemblyPath);
                 // Resolve any dependencies by forcing types to load.
                 assembly.GetTypes();
                 return assembly;
@@ -45,13 +59,18 @@ public static class AssemblyLoader
             var assembly = AppDomain.CurrentDomain
                 .GetAssemblies()
                 .FirstOrDefault(a => a.FullName == name);
-            if (assembly != null)
+
+            if (assembly is not null)
             {
                 return assembly;
             }
 
             var filename = $"{name.Split(',').First()}.dll";
-            var lookupPaths = new[] {Path.GetFullPath("./"), _directory};
+            var lookupPaths = new[]
+            {
+                Path.GetDirectoryName(args.RequestingAssembly?.Location) ?? string.Empty,
+                Path.GetFullPath("./"),
+            };
 
             foreach (var lookupPath in lookupPaths)
             {

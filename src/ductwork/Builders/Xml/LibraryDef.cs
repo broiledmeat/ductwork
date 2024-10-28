@@ -10,7 +10,7 @@ public record LibraryDef(XmlNode Node) : NodeBackedDef(Node)
 {
     private const string PathAttr = "path";
 
-    public string FilePath => Path.GetFullPath(XmlBuilder.GetAttribute(Node, PathAttr));
+    public string FilePath => XmlBuilder.GetAttribute(Node, PathAttr);
 
     public override IEnumerable<Exception> Validate()
     {

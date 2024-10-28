@@ -34,6 +34,7 @@ public class XmlBuilder : IBuilder
     };
 
     private XmlDocument _document = new();
+    private string? _filePath;
     private Logger? _logger;
     private const string DefaultDisplayName = "graph";
 
@@ -185,7 +186,7 @@ public class XmlBuilder : IBuilder
     {
         var document = new XmlDocument();
         document.Load(Path.GetFullPath(xmlFilepath));
-        return new XmlBuilder { _document = document, };
+        return new XmlBuilder { _document = document, _filePath = xmlFilepath };
     }
 
     public static XmlBuilder LoadString(string xml)
@@ -300,8 +301,11 @@ public class XmlBuilder : IBuilder
 
     private Assembly[] GetLibraryAssemblies()
     {
+        var searchPaths = Path.GetDirectoryName(_filePath) is { } filePathRoot
+            ? new[] { filePathRoot }
+            : null;
         return LibraryDefs
-            .Select(def => AssemblyLoader.Load(def.FilePath))
+            .Select(def => AssemblyLoader.Load(def.FilePath, searchPaths))
             .Concat(AppDomain.CurrentDomain.GetAssemblies())
             .Distinct()
             .ToArray();
