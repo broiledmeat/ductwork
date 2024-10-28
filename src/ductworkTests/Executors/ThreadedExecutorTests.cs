@@ -91,7 +91,7 @@ public class ThreadedExecutorTests
     }
 
     [Test]
-    [Timeout(2000)]
+    [CancelAfter(2000)]
     public void ExecutesWithOrphanInputWithoutHanging()
     {
         var receiver = new ReceiverComponent();
